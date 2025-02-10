@@ -7,9 +7,8 @@ on:
       - infrastructure/**
   pull_request:
     branches:
-      - main
-
-workflow_dispatch: #Manual workflow trigger
+     - main
+  workflow_dispatch: #Manual workflow trigger
 
 permissions:
   id-token: write
