@@ -48,7 +48,7 @@ jobs:
   deploy-stg:
     runs-on: ubuntu-latest
     needs: deploy-dev
-    environment: Development
+    environment: Staging
     steps:
       - uses: actions/checkout@v4
 
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-stg
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment: Development
+    environment: Production
     steps:
       - uses: actions/checkout@v4
 
