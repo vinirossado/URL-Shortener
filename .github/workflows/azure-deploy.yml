@@ -7,7 +7,9 @@ on:
       - infrastructure/**
   pull_request:
     branches:
-     - main
+      - main
+    paths:
+      - infrastructure/**
   workflow_dispatch: #Manual workflow trigger
 
 permissions:
@@ -27,7 +29,66 @@ jobs:
           client-id: ${{secrets.AZURE_CLIENT_ID}}
           tenant-id: ${{secrets.AZURE_TENANT_ID}}
           subscription-id: ${{vars.AZURE_SUBSCRIPTION_ID}}
-          
+
+      - name: Set up Azure CLI
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az group create --name ${{vars.RESOURCE_GROUP_NAME}} --location ${{vars.RESOURCE_GROUP_LOCATION}}
+            echo "Azure resource group created successfully"
+
+      - name: Deploy
+        uses: azure/arm-deploy@v2
+        with:
+          resourceGroupName: ${{vars.RESOURCE_GROUP_NAME}}
+          template: ./infrastructure/main.bicep
+  
+  
+  deploy-stg:
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: Development
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2.1.1
+        with:
+          client-id: ${{secrets.AZURE_CLIENT_ID}}
+          tenant-id: ${{secrets.AZURE_TENANT_ID}}
+          subscription-id: ${{vars.AZURE_SUBSCRIPTION_ID}}
+
+
+      - name: Set up Azure CLI
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az group create --name ${{vars.RESOURCE_GROUP_NAME}} --location ${{vars.RESOURCE_GROUP_LOCATION}}
+            echo "Azure resource group created successfully"
+
+      - name: Deploy
+        uses: azure/arm-deploy@v2
+        with:
+          resourceGroupName: ${{vars.RESOURCE_GROUP_NAME}}
+          template: ./infrastructure/main.bicep
+  
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: deploy-stg
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: Development
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2.1.1
+        with:
+          client-id: ${{secrets.AZURE_CLIENT_ID}}
+          tenant-id: ${{secrets.AZURE_TENANT_ID}}
+          subscription-id: ${{vars.AZURE_SUBSCRIPTION_ID}}
+
 
       - name: Set up Azure CLI
         uses: azure/CLI@v2
