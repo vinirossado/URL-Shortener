@@ -21,6 +21,12 @@ az ad sp create-for-rbac --name "GitHub-Actions-SP" \
                          --sdk-auth
 ```
 
+
+### Apply to Custom Contributor Role
+
+```bash
+az ad sp create-for-rbac --name "GitHub-Actions-SP" --role 'infra_deploy' --scopes /subscriptions/5f7636b2-6fe8-4471-b398-e9a55637cc2b --sdk-auth
+```
 ### Perform the Plan (WhatIf) 
 
 ```bash

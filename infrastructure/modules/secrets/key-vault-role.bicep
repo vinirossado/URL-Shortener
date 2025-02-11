@@ -18,5 +18,4 @@ resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04
     }
   }
 ]
-output principalId string = principalIds[0]
 
