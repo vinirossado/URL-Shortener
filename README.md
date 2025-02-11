@@ -26,4 +26,10 @@ az ad sp create-for-rbac --name "GitHub-Actions-SP" \
 ```bash
 az deployment group what-if --resource-group urlshortner-dev --template-file infrastructure/main.bicep
 ```
+
+### Deploy the changes
+
+```bash
+az deployment group ceate --resource-group urlshortner-dev --template-file infrastructure/main.bicep
+```
 #### Configure a federated identity credential on an app

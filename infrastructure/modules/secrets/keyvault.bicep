@@ -30,7 +30,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = {
   }
 }
 
-
 output id string = keyVault.id
 output name string = keyVault.name
  
