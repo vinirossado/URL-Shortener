@@ -1,10 +1,9 @@
 # URL-Shortener
 
+## IaC
 
-##I-A-C
 
-
-###Log in into Azure
+### Log in into Azure
 ```bash
 az login
 ```
@@ -22,4 +21,9 @@ az ad sp create-for-rbac --name "GitHub-Actions-SP" \
                          --sdk-auth
 ```
 
+### Perform the Plan (WhatIf) 
+
+```bash
+az deployment group what-if --resource-group urlshortner-dev --template-file infrastructure/main.bicep
+```
 #### Configure a federated identity credential on an app
