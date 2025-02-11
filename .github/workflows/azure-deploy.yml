@@ -43,7 +43,6 @@ jobs:
         with:
           resourceGroupName: ${{vars.RESOURCE_GROUP_NAME}}
           template: ./infrastructure/main.bicep
-          scope: ''
   
   deploy-stg:
     runs-on: ubuntu-latest
@@ -72,7 +71,6 @@ jobs:
         with:
           resourceGroupName: ${{vars.RESOURCE_GROUP_NAME}}
           template: ./infrastructure/main.bicep
-          scope: ''
   
   deploy-prod:
     runs-on: ubuntu-latest
