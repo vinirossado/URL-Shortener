@@ -1,10 +1,9 @@
 # URL-Shortener
 
+## IaC
 
-##I-A-C
 
-
-###Log in into Azure
+### Log in into Azure
 ```bash
 az login
 ```
