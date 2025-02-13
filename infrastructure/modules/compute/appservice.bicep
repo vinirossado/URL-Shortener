@@ -4,15 +4,15 @@ param appName string
 param keyVaultName string
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
-  kind: 'linux'
   name: appServicePlanName
   location: location
+  sku: {
+    tier: 'Basic'
+    name: 'B1'
+  }
+  kind: 'linux'
   properties: {
     reserved: true
-  }
-  sku: {
-    name: 'B1'
-    tier: 'Basic'
   }
 }
 
