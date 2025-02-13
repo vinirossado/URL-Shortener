@@ -1,6 +1,7 @@
 using UrlShortener.Core;
+using UrlShortener.Core.Urls.Add;
 
-namespace UrlShortener.Api.Core.Tests;
+namespace UrlShortener.Api.Core.Tests.Urls;
 
 public class ShortUrlGeneratorScenarios
 {
@@ -8,8 +9,10 @@ public class ShortUrlGeneratorScenarios
      * Unique tokens should be generated
      * Accept multiple Ranges
      * _TokenRange on TokenProvider can be null when getting token
-     * Should the token range use logs instead of ints?
+     * Who's the creator
+     * When was created
      */
+
     [Fact]
     public void Should_Return_Short_Url_For_Zero()
     {
