@@ -1,4 +1,6 @@
+using Api.Extensions;
 using Azure.Identity;
+using UrlShortener.Core.Urls.Add;
 
 var builder = WebApplication.CreateBuilder(args);
 var keyVaultName = builder.Configuration["KeyVault:Vault"];
@@ -13,6 +15,8 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddUrlFeature();
 
 var app = builder.Build();
 
@@ -24,28 +28,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+app.MapPost("/api/urls",
+    async (AddUrlHandler handler, AddUrlRequest request, CancellationToken cancellationToken) =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
+        var requestWithUser = request with { CreatedBy = "vini@gmail.com" };
+        var result = await handler.HandleAsync(requestWithUser, cancellationToken);
+        Console.WriteLine(result.Value!.ShortUrl);
+
+        if (!result.Succeeded)
+        {
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.Created($"/api/urls/{result.Value!.ShortUrl}", result.Value);
+    });
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

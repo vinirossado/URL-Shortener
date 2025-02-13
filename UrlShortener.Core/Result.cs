@@ -2,14 +2,14 @@ namespace UrlShortener.Core;
 
 public class Result<TValue>
 {
-    public Result(TValue value)
+    private Result(TValue value)
     {
         Succeeded = true;
         Value = value;
         Error = Error.None;
     }
 
-    public Result(Error error)
+    private Result(Error error)
     {
         Succeeded = false;
         Value = default;
