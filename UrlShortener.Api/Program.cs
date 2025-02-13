@@ -32,18 +32,23 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapPost("/api/urls",
-    async (AddUrlHandler handler, AddUrlRequest request, CancellationToken cancellationToken) =>
+    async (AddUrlHandler handler,
+        AddUrlRequest request,
+        CancellationToken cancellationToken) =>
     {
-        var requestWithUser = request with { CreatedBy = "vini@gmail.com" };
+        var requestWithUser = request with
+        {
+            CreatedBy = "vini@gmail.com"
+        };
         var result = await handler.HandleAsync(requestWithUser, cancellationToken);
-        Console.WriteLine(result.Value!.ShortUrl);
 
         if (!result.Succeeded)
         {
             return Results.BadRequest(result.Error);
         }
 
-        return Results.Created($"/api/urls/{result.Value!.ShortUrl}", result.Value);
+        return Results.Created($"/api/urls/{result.Value!.ShortUrl}",
+            result.Value);
     });
 
 app.Run();
