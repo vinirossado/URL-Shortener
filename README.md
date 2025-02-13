@@ -17,7 +17,7 @@ az group create --name urlshortner-dev --location westeurope
 ```bash 
 az ad sp create-for-rbac --name "GitHub-Actions-SP" \
                          --role contributor \
-                         --scopes /subscriptions/5f7636b2-6fe8-4471-b398-e9a55637cc2b \
+                         --scopes /subscriptions/{Azure_Subscription_Id} \
                          --sdk-auth
 ```
 
@@ -25,19 +25,23 @@ az ad sp create-for-rbac --name "GitHub-Actions-SP" \
 ### Apply to Custom Contributor Role
 
 ```bash
-az ad sp create-for-rbac --name "GitHub-Actions-SP" --role 'infra_deploy' --scopes /subscriptions/5f7636b2-6fe8-4471-b398-e9a55637cc2b --sdk-auth
+az ad sp create-for-rbac --name "GitHub-Actions-SP" \
+                         --role 'infra_deploy' \
+                         --scopes /subscriptions/{Azure_Subscription_Id} \
+                         --sdk-auth
 ```
-### Perform the Plan (WhatIf) 
+### Perform the Plan (What-If) 
 
 ```bash
 az deployment group what-if --resource-group urlshortner-dev /
- --template-file infrastructure/main.bicep
+                            --template-file infrastructure/main.bicep
 ```
 
 ### Deploy the changes
 
 ```bash
 az deployment group create --resource-group urlshortner-dev / 
---template-file infrastructure/main.bicep
+                           --template-file infrastructure/main.bicep
 ```
 #### Configure a federated identity credential on an app
+#### TODO: Add doc for federated identity.
