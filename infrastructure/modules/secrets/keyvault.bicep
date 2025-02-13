@@ -11,22 +11,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = {
     }
     enableRbacAuthorization: true
     tenantId: subscription().tenantId
-    // accessPolicies: [
-    //   {
-    //     tenantId: subscription().tenantId
-    //     objectId: '00000000-0000-0000-0000-000000000000'
-    //     permissions: {
-    //       keys: [
-    //         'get'
-    //         'list'
-    //       ]
-    //       secrets: [
-    //         'get'
-    //         'list'
-    //       ]
-    //     }
-    //   }
-    // ]
   }
 }
 
