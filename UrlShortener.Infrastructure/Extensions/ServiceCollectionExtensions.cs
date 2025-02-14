@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         services.AddSingleton<CosmosClient>(s => new CosmosClient(configuration["CosmosDb:ConnectionString"]!));
-
+        
         services.AddSingleton<IUrlDataStore>(s =>
         {
             var cosmosClient = s.GetRequiredService<CosmosClient>();

@@ -8,11 +8,11 @@ param keyVaultName string
 param containers array = [
   {
     name: 'items'
-    partitionKeyPath: '/partitionKey'
+    partitionKey: '/PartitionKey'
   }
 ]
 
-resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview' = {
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: name
   location: location
   kind: kind
@@ -28,7 +28,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-previ
   }
 }
 
-resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-12-01-preview' = {
+resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
   parent: cosmosDbAccount
   name: databaseName
   properties: {
@@ -38,7 +38,7 @@ resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@20
   }
 }
 
-resource cosmosDbContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-12-01-preview' = [
+resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = [
   for container in containers: {
     parent: cosmosDbDatabase
     name: container.name
@@ -47,7 +47,7 @@ resource cosmosDbContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/c
         id: container.name
         partitionKey: {
           paths: [
-            container.partitionKeyPath
+            container.partitionKey
           ]
           kind: 'Hash'
         }
@@ -71,16 +71,15 @@ resource cosmosDbContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/c
   }
 ]
 
-resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: keyVaultName
 }
 
-resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2024-04-01-preview' = {
+resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'CosmosDb--ConnectionString'
   properties: {
     value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
   }
 }
-
 output cosmosDbId string = cosmosDbAccount.id

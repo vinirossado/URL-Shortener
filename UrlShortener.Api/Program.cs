@@ -51,4 +51,14 @@ app.MapPost("/api/urls",
             result.Value);
     });
 
+
+var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
+Console.WriteLine("Available Routes:");
+foreach (var endpoint in endpointDataSource.Endpoints)
+{
+    if (endpoint is RouteEndpoint routeEndpoint)
+    {
+        Console.WriteLine($"{routeEndpoint.RoutePattern.RawText}");
+    }
+}
 app.Run();
