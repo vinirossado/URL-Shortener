@@ -38,7 +38,7 @@ resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@20
   }
 }
 
-resource cosmosDbContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-12-01-preview' = [
+resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = [
   for container in containers: {
     parent: cosmosDbDatabase
     name: container.name
@@ -71,17 +71,16 @@ resource cosmosDbContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/c
   }
 ]
 
-resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' existing = {
-  scope: resourceGroup()
+output cosmosDbId string = cosmosDbAccount.id
+
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: keyVaultName
 }
 
-resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2024-04-01-preview' = {
+resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'CosmosDb--ConnectionString'
   properties: {
     value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
   }
 }
-
-output cosmosDbId string = cosmosDbAccount.id
