@@ -27,7 +27,7 @@ builder.Services.AddLogging(logging =>
     logging.AddConsole();
     logging.AddDebug();
 });
-
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services
     .AddUrlFeature()
@@ -68,6 +68,8 @@ app.MapHealthChecks("/health", new HealthCheckOptions
         await context.Response.WriteAsJsonAsync(result);
     }
 });
+
+app.MapGet("/", () => new { message = "Hello World Doyte", version = "1.2"});
 
 app.MapPost("/api/urls",
     async (AddUrlHandler handler,
