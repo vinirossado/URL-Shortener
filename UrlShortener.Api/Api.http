@@ -1,11 +1,16 @@
 @Api_HostAddress = https://api-k4mcxdyfbnuxo.azurewebsites.net
 #@Api_HostAddress = http://localhost:5149
-POST {{Api_HostAddress}}/api/urls/
+GET {{Api_HostAddress}}
 Accept: application/json
 Content-Type: application/json
-
-{
-  "LongUrl": "https://www.google.com"
-}
+#
+#{
+#  "LongUrl": "https://www.google.com"
+#}
+#
+#
+#GET {{Api_HostAddress}}/health
+#Accept: application/json
+# 
 
 ###
