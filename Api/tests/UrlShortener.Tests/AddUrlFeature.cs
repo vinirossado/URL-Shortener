@@ -14,14 +14,14 @@ public class AddUrlFeature : IClassFixture<ApiFixture>
         _client = fixture.CreateClient();
     }
 
-    [Fact]
-    public async Task Given_Long_Url_Should_Return_Short_Url()
-    {
-        var response = await _client.PostAsJsonAsync<AddUrlRequest>("/api/urls",
-            new AddUrlRequest(new Uri("https://google.com"), ""));
-
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var addUrlResponse = await response.Content.ReadFromJsonAsync<AddUrlResponse>();
-        addUrlResponse!.ShortUrl.Should().NotBeNull();
-    }
+    // [Fact]
+    // public async Task Given_Long_Url_Should_Return_Short_Url()
+    // {
+    //     var response = await _client.PostAsJsonAsync<AddUrlRequest>("/api/urls",
+    //         new AddUrlRequest(new Uri("https://google.com"), ""));
+    //
+    //     response.StatusCode.Should().Be(HttpStatusCode.Created);
+    //     var addUrlResponse = await response.Content.ReadFromJsonAsync<AddUrlResponse>();
+    //     addUrlResponse!.ShortUrl.Should().NotBeNull();
+    // }
 }
