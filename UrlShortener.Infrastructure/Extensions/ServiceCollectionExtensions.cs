@@ -17,7 +17,9 @@ public static class ServiceCollectionExtensions
         {
             var cosmosClient = s.GetRequiredService<CosmosClient>();
 
-            var container = cosmosClient.GetContainer(configuration["DatabaseName"]!, configuration["ContainerName"]!);
+            var container = cosmosClient.GetContainer(
+                configuration["DatabaseName"]!,
+                configuration["ContainerName"]!);
             
             return new CosmosDbUrlDataStore(container);
         });

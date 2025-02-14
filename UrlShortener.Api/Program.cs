@@ -21,6 +21,13 @@ builder.Services.AddHealthChecks();
 builder.Services.Configure<ForwardedHeadersOptions>(options => { options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; });
 
 builder.Services.AddOpenApi();
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+    logging.AddDebug();
+});
+
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services
     .AddUrlFeature()
@@ -38,10 +45,14 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
     ResponseWriter = async (context, report) =>
     {
+        logger.LogInformation("Health check status: {status}", report.Status);
+
         context.Response.ContentType = "application/json";
         var result = new
         {
@@ -53,22 +64,32 @@ app.MapHealthChecks("/health", new HealthCheckOptions
                 duration = e.Value.Duration.TotalMilliseconds
             })
         };
+
         await context.Response.WriteAsJsonAsync(result);
     }
 });
 
 app.MapPost("/api/urls",
-    async (AddUrlHandler handler, AddUrlRequest request, CancellationToken cancellationToken) =>
+    async (AddUrlHandler handler,
+        AddUrlRequest request,
+        CancellationToken cancellationToken) =>
     {
-        var requestWithUser = request with { CreatedBy = "vini@gmail.com" };
+        logger.LogInformation("Adding URL: {url}", request.LongUrl);
+
+        var requestWithUser = request with
+        {
+            CreatedBy = "vini@gmail.com"
+        };
         var result = await handler.HandleAsync(requestWithUser, cancellationToken);
+        logger.LogInformation("Result from URL: {url}", result);
 
         if (!result.Succeeded)
         {
             return Results.BadRequest(result.Error);
         }
 
-        return Results.Created($"/api/urls/{result.Value!.ShortUrl}", result.Value);
+        return Results.Created($"/api/urls/{result.Value!.ShortUrl}",
+            result.Value);
     });
 
 
@@ -78,11 +99,13 @@ var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
 lifetime.ApplicationStarted.Register(() =>
 {
     Console.WriteLine("\n🚀 Available Endpoints:");
+    logger.LogInformation("Available Endpoints:");
     foreach (var endpoint in endpointDataSource.Endpoints)
     {
         if (endpoint is RouteEndpoint routeEndpoint)
         {
             Console.WriteLine($" - {routeEndpoint.RoutePattern.RawText}");
+            logger.LogInformation(" - {route}", routeEndpoint.RoutePattern.RawText);
         }
     }
 });

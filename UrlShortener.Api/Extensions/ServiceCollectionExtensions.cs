@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         {
             var tokenProvider = new TokenProvider();
             tokenProvider.AssignRange(1, 1000);
+            
             return tokenProvider;
         });
         services.AddScoped<ShortUrlGenerator>();
