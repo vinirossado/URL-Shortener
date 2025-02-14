@@ -25,23 +25,17 @@ az ad sp create-for-rbac --name "GitHub-Actions-SP" \
 ### Apply to Custom Contributor Role
 
 ```bash
-az ad sp create-for-rbac --name "GitHub-Actions-SP" \
-                         --role 'infra_deploy' \
-                         --scopes /subscriptions/{Azure_Subscription_Id} \
-                         --sdk-auth
-```
-### Perform the Plan (What-If) 
-
-```bash
-az deployment group what-if --resource-group urlshortner-dev \
-                            --template-file infrastructure/main.bicep
+az ad sp create-for-rbac --name "GitHub-Actions-SP" --role 'infra_deploy' --scopes /subscriptions/{Azure_Subscription_Id} --sdk-auth
 ```
 
-### Deploy the changes
+https://learn.microsoft.com/en-us/azure/role-based-access-control/troubleshooting?tabs=bicep
 
-```bash
-az deployment group create --resource-group urlshortner-dev \ 
-                           --template-file infrastructure/main.bicep
-```
 #### Configure a federated identity credential on an app
-#### TODO: Add doc for federated identity.
+
+https://learn.microsoft.com/en-gb/entra/workload-id/workload-identity-federation-create-trust?pivots=identity-wif-apps-methods-azp#configure-a-federated-identity-credential-on-an-app
+
+## Get Azure Publish Profile
+
+```bash
+az webapp deployment list-publishing-profiles --name api-k4mcxdyfbnuxo --resource-group urlshortener-dev --xml
+```
