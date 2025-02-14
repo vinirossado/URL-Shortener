@@ -1,9 +1,12 @@
 using Api.Extensions;
 using Azure.Identity;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
 var keyVaultName = builder.Configuration["KeyVault:Vault"];
 
 if (!string.IsNullOrWhiteSpace(keyVaultName))
@@ -15,6 +18,8 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
 
 // Add services
 builder.Services.AddHealthChecks();
+builder.Services.Configure<ForwardedHeadersOptions>(options => { options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; });
+
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services
@@ -23,6 +28,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 // Configure middleware
 if (app.Environment.IsDevelopment())
 {
@@ -32,22 +38,40 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.MapHealthChecks("/health");
-app.MapPost("/api/urls",
-    async (AddUrlHandler handler, AddUrlRequest request, CancellationToken cancellationToken) =>
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
     {
-        var requestWithUser = request with { CreatedBy = "vini@gmail.com" };
-        var result = await handler.HandleAsync(requestWithUser, cancellationToken);
-
-        if (!result.Succeeded)
+        context.Response.ContentType = "application/json";
+        var result = new
         {
-            return Results.BadRequest(result.Error);
-        }
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                key = e.Key,
+                status = e.Value.Status.ToString(),
+                duration = e.Value.Duration.TotalMilliseconds
+            })
+        };
+        await context.Response.WriteAsJsonAsync(result);
+    }
+});
+//
+// app.MapPost("/api/urls",
+//     async (AddUrlHandler handler, AddUrlRequest request, CancellationToken cancellationToken) =>
+//     {
+//         var requestWithUser = request with { CreatedBy = "vini@gmail.com" };
+//         var result = await handler.HandleAsync(requestWithUser, cancellationToken);
+//
+//         if (!result.Succeeded)
+//         {
+//             return Results.BadRequest(result.Error);
+//         }
+//
+//         return Results.Created($"/api/urls/{result.Value!.ShortUrl}", result.Value);
+//     });
 
-        return Results.Created($"/api/urls/{result.Value!.ShortUrl}", result.Value);
-    });
 
-// Print endpoints after app fully starts
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
 
