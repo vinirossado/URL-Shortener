@@ -4,11 +4,10 @@ param appName string
 param keyVaultName string
 param appSettings array = []
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: appServicePlanName
   location: location
   sku: {
-    tier: 'Basic'
     name: 'B1'
   }
   kind: 'linux'
@@ -17,7 +16,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
   }
 }
 
-resource webApp 'Microsoft.Web/sites@2024-04-01' = {
+resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   name: appName
   location: location
   identity: {
@@ -31,7 +30,7 @@ resource webApp 'Microsoft.Web/sites@2024-04-01' = {
       appSettings: concat(
         [
           {
-            name: 'keyVaultName'
+            name: 'KeyVaultName'
             value: keyVaultName
           }
         ],
@@ -41,7 +40,7 @@ resource webApp 'Microsoft.Web/sites@2024-04-01' = {
   }
 }
 
-resource webAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
+resource webAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
   parent: webApp
   name: 'web'
   properties: {

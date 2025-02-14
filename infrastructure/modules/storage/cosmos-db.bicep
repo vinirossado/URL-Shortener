@@ -61,8 +61,7 @@ resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
           ]
           excludedPaths: [
             {
-              path: '/"_etag"/?'
-            }
+              path: '/_etag/?'            }
           ]
         }
         defaultTtl: -1
