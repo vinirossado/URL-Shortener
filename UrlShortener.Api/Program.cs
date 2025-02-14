@@ -1,8 +1,5 @@
 using Api.Extensions;
 using Azure.Identity;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Hosting;
 using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
 
@@ -17,6 +14,7 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
 }
 
 // Add services
+builder.Services.AddHealthChecks();
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services
@@ -34,7 +32,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-// Example endpoint
+app.MapHealthChecks("/health");
 app.MapPost("/api/urls",
     async (AddUrlHandler handler, AddUrlRequest request, CancellationToken cancellationToken) =>
     {
