@@ -1,5 +1,8 @@
 using Api.Extensions;
 using Azure.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Hosting;
 using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
 
@@ -13,8 +16,7 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
         new DefaultAzureCredential());
 }
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Add services
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services
@@ -23,23 +25,20 @@ builder.Services
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure middleware
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
 
+// Example endpoint
 app.MapPost("/api/urls",
-    async (AddUrlHandler handler,
-        AddUrlRequest request,
-        CancellationToken cancellationToken) =>
+    async (AddUrlHandler handler, AddUrlRequest request, CancellationToken cancellationToken) =>
     {
-        var requestWithUser = request with
-        {
-            CreatedBy = "vini@gmail.com"
-        };
+        var requestWithUser = request with { CreatedBy = "vini@gmail.com" };
         var result = await handler.HandleAsync(requestWithUser, cancellationToken);
 
         if (!result.Succeeded)
@@ -47,18 +46,23 @@ app.MapPost("/api/urls",
             return Results.BadRequest(result.Error);
         }
 
-        return Results.Created($"/api/urls/{result.Value!.ShortUrl}",
-            result.Value);
+        return Results.Created($"/api/urls/{result.Value!.ShortUrl}", result.Value);
     });
 
-
+// Print endpoints after app fully starts
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
-Console.WriteLine("Available Routes:");
-foreach (var endpoint in endpointDataSource.Endpoints)
+
+lifetime.ApplicationStarted.Register(() =>
 {
-    if (endpoint is RouteEndpoint routeEndpoint)
+    Console.WriteLine("\n🚀 Available Endpoints:");
+    foreach (var endpoint in endpointDataSource.Endpoints)
     {
-        Console.WriteLine($"{routeEndpoint.RoutePattern.RawText}");
+        if (endpoint is RouteEndpoint routeEndpoint)
+        {
+            Console.WriteLine($" - {routeEndpoint.RoutePattern.RawText}");
+        }
     }
-}
+});
+
 app.Run();
