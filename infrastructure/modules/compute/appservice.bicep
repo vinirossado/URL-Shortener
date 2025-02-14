@@ -1,8 +1,8 @@
 param location string = resourceGroup().location
 param appServicePlanName string
 param appName string
-param keyVaultName string
-param appSettings array = []
+// param keyVaultName string
+// param appSettings array = []
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: appServicePlanName
