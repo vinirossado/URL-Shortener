@@ -16,100 +16,65 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
         new DefaultAzureCredential());
 }
 
-// Add services
-builder.Services.AddHealthChecks();
-builder.Services.Configure<ForwardedHeadersOptions>(options => { options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; });
-
+// Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddLogging(logging =>
-{
-    logging.ClearProviders();
-    logging.AddConsole();
-    logging.AddDebug();
-});
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSingleton(TimeProvider.System);
-builder.Services
-    .AddUrlFeature()
-    .AddCosmosUrlDataStore(builder.Configuration);
 
 var app = builder.Build();
 
-app.UseForwardedHeaders();
-// Configure middleware
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
-app.UseRouting();
 
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-
-app.MapHealthChecks("/health", new HealthCheckOptions
+var summaries = new[]
 {
-    ResponseWriter = async (context, report) =>
+    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+};
+
+// app.MapPost("/api/urls",
+//     async (AddUrlHandler handler,
+//         AddUrlRequest request,
+//         CancellationToken cancellationToken) =>
+//     {
+//         logger.LogInformation("Adding URL: {url}", request.LongUrl);
+
+//         var requestWithUser = request with
+//         {
+//             CreatedBy = "vini@gmail.com"
+//         };
+//         var result = await handler.HandleAsync(requestWithUser, cancellationToken);
+//         logger.LogInformation("Result from URL: {url}", result);
+
+//         if (!result.Succeeded)
+//         {
+//             return Results.BadRequest(result.Error);
+//         }
+
+//         return Results.Created($"/api/urls/{result.Value!.ShortUrl}",
+//             result.Value);
+//     });
+
+app.MapGet("/weatherforecast", () =>
     {
-        logger.LogInformation("Health check status: {status}", report.Status);
-
-        context.Response.ContentType = "application/json";
-        var result = new
-        {
-            status = report.Status.ToString(),
-            checks = report.Entries.Select(e => new
-            {
-                key = e.Key,
-                status = e.Value.Status.ToString(),
-                duration = e.Value.Duration.TotalMilliseconds
-            })
-        };
-
-        await context.Response.WriteAsJsonAsync(result);
-    }
-});
-
-app.MapGet("/", () => new { message = "Hello World Doyte", version = "1.2"});
-
-app.MapPost("/api/urls",
-    async (AddUrlHandler handler,
-        AddUrlRequest request,
-        CancellationToken cancellationToken) =>
-    {
-        logger.LogInformation("Adding URL: {url}", request.LongUrl);
-
-        var requestWithUser = request with
-        {
-            CreatedBy = "vini@gmail.com"
-        };
-        var result = await handler.HandleAsync(requestWithUser, cancellationToken);
-        logger.LogInformation("Result from URL: {url}", result);
-
-        if (!result.Succeeded)
-        {
-            return Results.BadRequest(result.Error);
-        }
-
-        return Results.Created($"/api/urls/{result.Value!.ShortUrl}",
-            result.Value);
-    });
-
-
-var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
-var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
-
-lifetime.ApplicationStarted.Register(() =>
-{
-    Console.WriteLine("\n🚀 Available Endpoints:");
-    logger.LogInformation("Available Endpoints:");
-    foreach (var endpoint in endpointDataSource.Endpoints)
-    {
-        if (endpoint is RouteEndpoint routeEndpoint)
-        {
-            Console.WriteLine($" - {routeEndpoint.RoutePattern.RawText}");
-            logger.LogInformation(" - {route}", routeEndpoint.RoutePattern.RawText);
-        }
-    }
-});
+        var forecast = Enumerable.Range(1, 5).Select(index =>
+                new WeatherForecast
+                (
+                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                    Random.Shared.Next(-20, 55),
+                    summaries[Random.Shared.Next(summaries.Length)]
+                ))
+            .ToArray();
+        return forecast;
+    })
+    .WithName("GetWeatherForecast");
 
 app.Run();
+
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
