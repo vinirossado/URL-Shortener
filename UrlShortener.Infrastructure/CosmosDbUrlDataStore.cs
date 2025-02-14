@@ -5,7 +5,6 @@ using UrlShortener.Core.Urls.Add;
 
 namespace UrlShortener.Infrastructure;
 
-
 public class CosmosDbUrlDataStore : IUrlDataStore
 {
     private readonly Container _container;

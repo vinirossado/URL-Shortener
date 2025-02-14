@@ -61,7 +61,8 @@ resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
           ]
           excludedPaths: [
             {
-              path: '/_etag/?'            }
+              path: '/_etag/?'
+            }
           ]
         }
         defaultTtl: -1
@@ -69,8 +70,6 @@ resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
     }
   }
 ]
-
-output cosmosDbId string = cosmosDbAccount.id
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: keyVaultName
@@ -83,3 +82,6 @@ resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
     value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
   }
 }
+
+output cosmosDbId string = cosmosDbAccount.id
+
