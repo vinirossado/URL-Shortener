@@ -16,30 +16,30 @@ module apiService 'modules/compute/appservice.bicep' = {
     appServicePlanName: 'plan-api-${uniqueId}'
     location: location
     keyVaultName: keyVault.outputs.name
-    // appSettings: [
-    //   {
-    //     name: 'DatabaseName'
-    //     value: 'urls'
-    //   }
-    //   {
-    //     name: 'ContainerName'
-    //     value: 'items'
-    //   }
-    // ]
+    appSettings: [
+      {
+        name: 'DatabaseName'
+        value: 'urls'
+      }
+      {
+        name: 'ContainerName'
+        value: 'items'
+      }
+    ]
   }
 }
 
-// module cosmosDb 'modules/storage/cosmos-db.bicep' = {
-//   name: 'cosmosDbDeployment'
-//   params: {
-//     name: 'cosmos-db-${uniqueId}'
-//     location: location
-//     kind: 'GlobalDocumentDB'
-//     databaseName: 'urls'
-//     locationName: 'Spain Central'
-//     keyVaultName: keyVault.outputs.name
-//   }
-// }
+module cosmosDb 'modules/storage/cosmos-db.bicep' = {
+  name: 'cosmosDbDeployment'
+  params: {
+    name: 'cosmos-db-${uniqueId}'
+    location: location
+    kind: 'GlobalDocumentDB'
+    databaseName: 'urls'
+    locationName: 'Spain Central'
+    keyVaultName: keyVault.outputs.name
+  }
+}
 
 module keyVaultRoleAssignment 'modules/secrets/key-vault-role.bicep' = {
   name: 'keyVaultRoleAssignmentDeployment'
