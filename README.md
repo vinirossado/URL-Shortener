@@ -10,7 +10,7 @@ az login
 
 ### Create Resource Group
 ```bash
-az group create --name urlshortner-dev --location westeurope
+az group create --name urlshortener-dev --location westeurope
 ```
 
 ### Create User for GH Actions

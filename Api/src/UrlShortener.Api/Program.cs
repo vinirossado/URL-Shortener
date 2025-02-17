@@ -1,9 +1,5 @@
-using Api.Extensions;
 using Azure.Identity;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.HttpOverrides;
 using UrlShortener.Core.Urls.Add;
-using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,28 +31,25 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-// app.MapPost("/api/urls",
-//     async (AddUrlHandler handler,
-//         AddUrlRequest request,
-//         CancellationToken cancellationToken) =>
-//     {
-//         logger.LogInformation("Adding URL: {url}", request.LongUrl);
+app.MapPost("/api/urls",
+    async (AddUrlHandler handler,
+        AddUrlRequest request,
+        CancellationToken cancellationToken) =>
+    {
+        var requestWithUser = request with
+        {
+            CreatedBy = "vini@gmail.com"
+        };
+        var result = await handler.HandleAsync(requestWithUser, cancellationToken);
 
-//         var requestWithUser = request with
-//         {
-//             CreatedBy = "vini@gmail.com"
-//         };
-//         var result = await handler.HandleAsync(requestWithUser, cancellationToken);
-//         logger.LogInformation("Result from URL: {url}", result);
+        if (!result.Succeeded)
+        {
+            return Results.BadRequest(result.Error);
+        }
 
-//         if (!result.Succeeded)
-//         {
-//             return Results.BadRequest(result.Error);
-//         }
-
-//         return Results.Created($"/api/urls/{result.Value!.ShortUrl}",
-//             result.Value);
-//     });
+        return Results.Created($"/api/urls/{result.Value!.ShortUrl}",
+            result.Value);
+    });
 
 app.MapGet("/weatherforecast", () =>
     {
