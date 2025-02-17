@@ -1,5 +1,7 @@
+using Api.Extensions;
 using Azure.Identity;
 using UrlShortener.Core.Urls.Add;
+using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,10 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
         new Uri($"https://{keyVaultName}.vault.azure.net/"),
         new DefaultAzureCredential());
 }
+
+builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddUrlFeature().AddCosmosUrlDataStore(builder.Configuration);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
