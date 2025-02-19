@@ -4,7 +4,6 @@ param kind string
 param databaseName string
 param locationName string
 param keyVaultName string
-param subnets array
 
 param containers array = [
   {
