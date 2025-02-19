@@ -1,10 +1,12 @@
 param location string = resourceGroup().location
 var uniqueId = uniqueString(resourceGroup().id)
+var keyVaultName = 'kv-${uniqueId}'
+
 
 module keyVault 'modules/secrets/keyvault.bicep' = {
   name: 'keyVaultDeployment' // The name of the module not resource
   params: {
-    vaultName: 'kv-${uniqueId}'
+    vaultName: keyVaultName
     location: location
   }
 }
@@ -37,9 +39,11 @@ module cosmosDb 'modules/storage/cosmos-db.bicep' = {
     kind: 'GlobalDocumentDB'
     databaseName: 'urls'
     locationName: 'Spain Central'
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: keyVaultName
   }
+
 }
+
 
 module keyVaultRoleAssignment 'modules/secrets/key-vault-role.bicep' = {
   name: 'keyVaultRoleAssignmentDeployment'

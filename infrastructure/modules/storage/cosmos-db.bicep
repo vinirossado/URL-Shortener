@@ -4,15 +4,20 @@ param kind string
 param databaseName string
 param locationName string
 param keyVaultName string
+param subnets array
 
 param containers array = [
   {
     name: 'items'
     partitionKey: '/PartitionKey'
   }
+  {
+    name: 'byUser'
+    partitionKey: '/PartitionKey'
+  }
 ]
 
-resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview' = {
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: name
   location: location
   kind: kind
@@ -25,10 +30,16 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-previ
         isZoneRedundant: false
       }
     ]
+    isVirtualNetworkFilterEnabled: true
+    virtualNetworkRules: [
+      for subnetId in subnets: {
+        id: subnetId
+      }
+    ]
   }
 }
 
-resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-12-01-preview' = {
+resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
   parent: cosmosDbAccount
   name: databaseName
   properties: {
@@ -61,7 +72,7 @@ resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
           ]
           excludedPaths: [
             {
-              path: '/_etag/?'
+              path: '/"_etag"/?'
             }
           ]
         }
@@ -84,4 +95,3 @@ resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
 }
 
 output cosmosDbId string = cosmosDbAccount.id
-
