@@ -1,8 +1,8 @@
 param location string = resourceGroup().location
 var uniqueId = uniqueString(resourceGroup().id)
 var keyVaultName = 'kv-${uniqueId}'
-var vnetName = 'vnet-${uniqueId}'
-var apiSubnetName = 'subnet-api-${uniqueId}'
+// var vnetName = 'vnet-${uniqueId}'
+// var apiSubnetName = 'subnet-api-${uniqueId}'
 
 module keyVault 'modules/secrets/keyvault.bicep' = {
   name: 'keyVaultDeployment' // The name of the module not resource
@@ -10,7 +10,7 @@ module keyVault 'modules/secrets/keyvault.bicep' = {
     vaultName: keyVaultName
     location: location
     subnets: [
-      resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, apiSubnetName)
+      // resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, apiSubnetName)
     ]
   }
 }
@@ -45,7 +45,7 @@ module cosmosDb 'modules/storage/cosmos-db.bicep' = {
     locationName: 'Spain Central'
     keyVaultName: keyVaultName
     subnets: [
-      resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, apiSubnetName)
+      // resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, apiSubnetName)
     ]
   }
 }
