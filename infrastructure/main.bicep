@@ -1,4 +1,6 @@
 param location string = resourceGroup().location
+@secure()
+param pgSqlPassword string
 var uniqueId = uniqueString(resourceGroup().id)
 var keyVaultName = 'kv-${uniqueId}'
 // var vnetName = 'vnet-${uniqueId}'
@@ -40,16 +42,26 @@ module tokenRangeService 'modules/compute/appservice.bicep' = {
     appServicePlanName: 'plan-token-range-${uniqueId}'
     location: location
     keyVaultName: keyVault.outputs.name
-//     appSettings: [
-//       {
-//         name: 'DatabaseName'
-//         value: 'urls'
-//       }
-//       {
-//         name: 'ContainerName'
-//         value: 'byUser'
-//       }
-//     ]
+    // appSettings: [
+    //   {
+    //     name: 'DatabaseName'
+    //     value: 'urls'
+    //   }
+    //   {
+    //     name: 'ContainerName'
+    //     value: 'byUser'
+    //   }
+    // ]
+  }
+}
+module postgres 'modules/storage/postgresql.bicep' = {
+  name: 'postgresDeployment'
+  params: {
+    name: 'postgresql-${uniqueString(resourceGroup().id)}'
+    location: location
+    administratorLogin: 'adminuser'
+    administratorPassword: pgSqlPassword
+    keyVaultName: keyVault.outputs.name
   }
 }
 
