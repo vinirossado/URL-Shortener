@@ -11,7 +11,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddSingleton<CosmosClient>(s => new CosmosClient(configuration["CosmosDb:ConnectionString"]!));
+        services.AddSingleton<CosmosClient>(s =>
+            new CosmosClient(
+                "AccountEndpoint=https://cosmos-db-k4mcxdyfbnuxo.documents.azure.com:443/;AccountKey=jfHfLaEg2ZPcPPYlo6qqrYTnInnPaDDddCMDsRdJP9QX1n7SKQfHdhp4tTFoxkH9puvhYCAju6chACDbyFz5GA==;"));
         
         services.AddSingleton<IUrlDataStore>(s =>
         {
