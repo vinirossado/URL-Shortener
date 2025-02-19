@@ -38,6 +38,13 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-
       endIpAddress: '0.0.0.0'
     }
   }
+  resource firewallRulePublicIP 'firewallRules' = {
+    name: 'allow-public-IPs'
+    properties: {
+      startIpAddress: '88.196.181.157'
+      endIpAddress: '88.196.181.157'
+    }
+  }
 }
 
 resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
