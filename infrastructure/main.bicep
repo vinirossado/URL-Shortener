@@ -41,7 +41,9 @@ module cosmosDb 'modules/storage/cosmos-db.bicep' = {
     locationName: 'Spain Central'
     keyVaultName: keyVaultName
   }
-
+  subnets: [
+    apiService.outputs.appServiceId
+  ]
 }
 
 
