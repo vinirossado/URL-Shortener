@@ -5,12 +5,12 @@ param administratorLogin string
 @secure()
 param administratorPassword string
 
-resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
+resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
   name: name
   location: location
   sku: {
     name: 'Standard_B1ms'
-    tier: 'Bustable'
+    tier: 'Burstable'
   }
   properties: {
     version: '16'
@@ -23,6 +23,9 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01'
     }
     administratorLogin: administratorLogin
     administratorLoginPassword: administratorPassword
+    network: {
+      publicNetworkAccess: 'Disabled'
+    }
   }
   resource database 'databases' = {
     name: 'ranges'
@@ -35,18 +38,18 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01'
       endIpAddress: '0.0.0.0'
     }
   }
+}
 
-  resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-    name: keyVaultName
+resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'Postgres--ConnectionString'
+  properties: {
+    value: 'Server=${postgresqlServer.name}.postgres.database.azure.com;Database=ranges;Port=5432;User Id=${administratorLogin};Password=${administratorPassword};Ssl Mode=Require;' // IMPORTANT: Use an applicaiton user for production
   }
+}
 
-  resource postgresqlDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-    parent: keyVault
-    name: 'Postgres--ConnectionString'
-    properties: {
-      value: '${postgresqlServer.fullyQualifiedDomainName};database=ranges;User Id=${postgresqlServer.properties.administratorLogin};password=${postgresqlServer.properties.administratorLoginPassword}'
-    }
-  }
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+  name: keyVaultName
 }
 
 output serverId string = postgresqlServer.id
