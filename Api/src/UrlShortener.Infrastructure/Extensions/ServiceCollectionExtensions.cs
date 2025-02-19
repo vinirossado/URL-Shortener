@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<CosmosClient>(s =>
             new CosmosClient(
-                "AccountEndpoint=https://cosmos-db-k4mcxdyfbnuxo.documents.azure.com:443/;AccountKey=jfHfLaEg2ZPcPPYlo6qqrYTnInnPaDDddCMDsRdJP9QX1n7SKQfHdhp4tTFoxkH9puvhYCAju6chACDbyFz5GA==;"));
+                "AccountEndpoint=https://cosmos-db-2g45mzh7gjumo.documents.azure.com:443/;AccountKey=uoovgHuipyzwG74vteFwDjKppzTLVMX9zBHVK5mRRx45DgG28MIlLvJoYUbOV3ge6gf4W9XO6GQHACDbF8956w==;"));
         
         services.AddSingleton<IUrlDataStore>(s =>
         {

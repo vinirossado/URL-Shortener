@@ -9,9 +9,7 @@ module keyVault 'modules/secrets/keyvault.bicep' = {
   params: {
     vaultName: keyVaultName
     location: location
-    subnets: [
-      // resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, apiSubnetName)
-    ]
+
   }
 }
 
@@ -44,9 +42,6 @@ module cosmosDb 'modules/storage/cosmos-db.bicep' = {
     databaseName: 'urls'
     locationName: 'Spain Central'
     keyVaultName: keyVaultName
-    subnets: [
-      // resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, apiSubnetName)
-    ]
   }
 }
 
