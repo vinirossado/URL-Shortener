@@ -30,11 +30,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
       }
     ]
     isVirtualNetworkFilterEnabled: true
-    virtualNetworkRules: [
-      for subnetId in subnets: {
-        id: subnetId
-      }
-    ]
+  
   }
 }
 
