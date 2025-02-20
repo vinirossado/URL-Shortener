@@ -1,6 +1,6 @@
-@UrlShortener.TokenRangeService_HostAddress = http://localhost:5067
+@UrlShortener.TokenRangeService_HostAddress = https://token-range-service-2g45mzh7gjumo.azurewebsites.net
 
-GET {{UrlShortener.TokenRangeService_HostAddress}}/weatherforecast/
+POST {{UrlShortener.TokenRangeService_HostAddress}}/assign
 Accept: application/json
 
 ###
