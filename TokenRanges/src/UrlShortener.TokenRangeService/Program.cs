@@ -26,7 +26,3 @@ app.MapPost("/assign",
     });
 
 app.Run();
-
-public record AssignTokenRangeRequest(string Key);
-
-public record TokenRangeResponse(long Start, long End);

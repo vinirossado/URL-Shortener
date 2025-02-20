@@ -7,7 +7,7 @@ namespace UrlShortener.TokenRangeService.Tests;
 public class Fixture : WebApplicationFactory<ITokenRangeAssemblyMarker>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder().Build();
-    public string ConnectionString => _postgresContainer.GetConnectionString();
+    private string ConnectionString => _postgresContainer.GetConnectionString();
 
     public async Task InitializeAsync()
     {
@@ -15,6 +15,11 @@ public class Fixture : WebApplicationFactory<ITokenRangeAssemblyMarker>, IAsyncL
         
         Environment.SetEnvironmentVariable("Postgres__ConnectionString", ConnectionString);
 
+        await InitializeSqlTable();
+    }
+
+    private async Task InitializeSqlTable()
+    {
         var tableSql = await File.ReadAllTextAsync("Table.sql");
         
         await using var connection = new NpgsqlConnection(ConnectionString);
