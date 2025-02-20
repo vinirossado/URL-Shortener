@@ -36,7 +36,7 @@ module apiService 'modules/compute/appservice.bicep' = {
 }
 
 module tokenRangeService 'modules/compute/appservice.bicep' = {
-  name: 'tokenRangeServiceDeployment'
+  name: 'tokenRangeServiceDeployment' 
   params: {
     appName: 'token-range-service-${uniqueId}'
     appServicePlanName: 'plan-token-range-${uniqueId}'
@@ -83,6 +83,7 @@ module keyVaultRoleAssignment 'modules/secrets/key-vault-role.bicep' = {
     keyVaultName: keyVault.outputs.name
     principalIds: [
       apiService.outputs.principalId
+      tokenRangeService.outputs.principalId
     ]
   }
 }
