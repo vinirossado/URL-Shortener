@@ -32,7 +32,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/", () => "TokenRanges Service");
+app.MapGet("/", () => "URL Shorneter API");
 
 app.MapPost("/api/urls",
     async (AddUrlHandler handler,
