@@ -50,7 +50,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.API_RESOURCE_NAME }}
+          app-name: ${{ vars.TOKEN_RANGE_RESOURCE_NAME }}
           slot-name: "Production"
           publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
@@ -68,7 +68,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.API_RESOURCE_NAME }}
+          app-name: ${{ vars.TOKEN_RANGE_RESOURCE_NAME }}
           slot-name: "Production"
           publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
@@ -87,7 +87,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.API_RESOURCE_NAME }}
+          app-name: ${{ vars.TOKEN_RANGE_RESOURCE_NAME }}
           slot-name: "Production"
           publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
