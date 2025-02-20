@@ -4,16 +4,16 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - "TokenRanges/**"
+      - TokenRanges/**
   pull_request:
     branches: [ "main" ]
     paths:
-      - "TokenRanges/**"
-
+      - TokenRanges/**
   workflow_dispatch: # manual trigger
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +35,11 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
+      - name: Upload Sql artifact for db deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: pg-script
+          path: TokenRanges/tests/UrlShortener.TokenRangeService.Tests/Table.sql
 
   deploy-dev:
     runs-on: ubuntu-latest
@@ -42,12 +47,18 @@ jobs:
     environment: Development
 
     steps:
+
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
 
-      - name: Install PostgreSQL Client
+      - name: Download db artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: pg-script
+
+      - name: Install PostgresSQL client
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client
@@ -58,15 +69,16 @@ jobs:
           PGDATABASE: ranges
           PGUSER: ${{ secrets.POSTGRES_USER }}
           PGPASSWORD: ${{ secrets.PG_SQL_PASSWORD }}
-        run: psql -f src/UrlShortener.TokenRangeService/Table.sql
+        run: psql -f Table.sql
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.TOKEN_RANGE_RESOURCE_NAME }}
-          slot-name: "Production"
+          app-name: ${{ vars.TOKEN_RANGES_RESOURCE_NAME }}
+          slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
+
 
   deploy-stg:
     runs-on: ubuntu-latest
@@ -78,13 +90,32 @@ jobs:
         with:
           name: .net-app
 
+      - name: Download db artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: pg-script
+
+      - name: Install PostgresSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Deploy Database Schema
+        env:
+          PGHOST: ${{ secrets.POSTGRES_HOST }}
+          PGDATABASE: ranges
+          PGUSER: ${{ secrets.POSTGRES_USER }}
+          PGPASSWORD: ${{ secrets.PG_SQL_PASSWORD }}
+        run: psql -f Table.sql
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.TOKEN_RANGE_RESOURCE_NAME }}
-          slot-name: "Production"
+          app-name: ${{ vars.TOKEN_RANGES_RESOURCE_NAME }}
+          slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
+
 
   deploy-prd:
     runs-on: ubuntu-latest
@@ -97,10 +128,28 @@ jobs:
         with:
           name: .net-app
 
+      - name: Download db artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: pg-script
+
+      - name: Install PostgresSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Deploy Database Schema
+        env:
+          PGHOST: ${{ secrets.POSTGRES_HOST }}
+          PGDATABASE: ranges
+          PGUSER: ${{ secrets.POSTGRES_USER }}
+          PGPASSWORD: ${{ secrets.PG_SQL_PASSWORD }}
+        run: psql -f Table.sql
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.TOKEN_RANGE_RESOURCE_NAME }}
-          slot-name: "Production"
+          app-name: ${{ vars.TOKEN_RANGES_RESOURCE_NAME }}
+          slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
