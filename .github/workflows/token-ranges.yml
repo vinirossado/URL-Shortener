@@ -1,14 +1,14 @@
-name: API
+name: Token Range Service
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
-      - "Api/**"
+      - "TokenRanges/**"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
-      - "Api/**"
+      - "TokenRanges/**"
 
   workflow_dispatch: # manual trigger
 
@@ -29,7 +29,7 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal
       - name: dotnet publish
-        run: dotnet publish Api/src/UrlShortener.Api -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish TokenRanges/src/UrlShortener.TokenRangeService.Api -c Release -o ${{env.DOTNET_ROOT}}/myapp
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
