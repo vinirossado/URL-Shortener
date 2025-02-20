@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pg-script
-          path: TokenRanges/tests/UrlShortener.TokenRangeService.Tests/Table.sql
+          path: UrlShortener.TokenRangeService.Tests/Table.sql
 
   deploy-dev:
     runs-on: ubuntu-latest
@@ -47,7 +47,6 @@ jobs:
     environment: Development
 
     steps:
-
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
