@@ -1,6 +1,16 @@
+using Azure.Identity;
 using UrlShortener.TokenRangeService;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var keyVaultName = builder.Configuration["KeyVault:Vault"];
+
+if (!string.IsNullOrWhiteSpace(keyVaultName))
+{
+    builder.Configuration.AddAzureKeyVault(
+        new Uri($"https://{keyVaultName}.vault.azure.net/"),
+        new DefaultAzureCredential());
+}
 
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(
