@@ -52,7 +52,7 @@ jobs:
         with:
           app-name: ${{ vars.API_RESOURCE_NAME }}
           slot-name: "Production"
-          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
 
   deploy-stg:
@@ -70,7 +70,7 @@ jobs:
         with:
           app-name: ${{ vars.API_RESOURCE_NAME }}
           slot-name: "Production"
-          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
 
   deploy-prd:
@@ -89,5 +89,5 @@ jobs:
         with:
           app-name: ${{ vars.API_RESOURCE_NAME }}
           slot-name: "Production"
-          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
