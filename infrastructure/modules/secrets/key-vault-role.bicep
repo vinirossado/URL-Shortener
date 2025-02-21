@@ -19,7 +19,7 @@ resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04
       principalId: principalId
       principalType: principalType
     }
-  }
+  },
   for principalId in principalIds: {
     scope: keyVault
     name: guid(keyVault.id, principalId, keyVaultSecretsUserRoleDefinitionId)
