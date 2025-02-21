@@ -54,16 +54,17 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-
     }
 }
 
-resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+  name: keyVaultName
+}
+
+resource postgresDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'Postgres--ConnectionString'
   properties: {
     value: 'Server=${postgresqlServer.name}.postgres.database.azure.com;Database=ranges;Port=5432;User Id=${administratorLogin};Password=${administratorPassword};Ssl Mode=Require;' // IMPORTANT: Use an applicaiton user for production
   }
-}
-
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name: keyVaultName
 }
 
 output serverId string = postgresqlServer.id
