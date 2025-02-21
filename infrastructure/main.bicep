@@ -11,7 +11,6 @@ module keyVault 'modules/secrets/keyvault.bicep' = {
   params: {
     vaultName: keyVaultName
     location: location
-
   }
 }
 
@@ -53,9 +52,7 @@ module tokenRangeService 'modules/compute/appservice.bicep' = {
     //   }
     // ]
   }
-  dependsOn: [
-    keyVault
-  ]
+
 }
 module postgres 'modules/storage/postgresql.bicep' = {
   name: 'postgresDeployment'
@@ -92,7 +89,5 @@ module keyVaultRoleAssignment 'modules/secrets/key-vault-role.bicep' = {
       tokenRangeService.outputs.principalId
     ]
   }
-  dependsOn:[
-      keyVault
-  ]
+
 }
