@@ -38,20 +38,14 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-
       endIpAddress: '0.0.0.0'
     }
   }
-  resource firewallRulePublicIP 'firewallRules' = {
-    name: 'allow-public-IPs'
-    properties: {
-      startIpAddress: '88.196.181.157'
-      endIpAddress: '88.196.181.157'
-    }
-  }
-    resource firewallRulePostgresqlIP 'firewallRules' = {
-      name: 'allow-public-postgres-IPs'
-      properties: {
-        startIpAddress: '104.46.44.181'
-        endIpAddress: '104.46.44.181'
-      }
-    }
+ resource firewallRulePublicIP 'firewallRules' = {
+   name: 'allow-public-IPs'
+   properties: {
+     startIpAddress: '0.0.0.0'
+     endIpAddress: '255.255.255.255'
+   }
+ }
+ 
 }
 
 
