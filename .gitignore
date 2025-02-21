@@ -396,6 +396,20 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
+# Remove appSettings.json from source control in all directories
+
+# Local directory
+appSettings.json
+
+# Infrastructure directory
+infrastructure/appSettings.json
+
+TokenRanges/src/UrlShortener.TokenRangeService/appSettings.json
+
+
+
+
+
 # JetBrains Rider
 *.sln.iml
 *.idea/
