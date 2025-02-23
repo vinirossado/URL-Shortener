@@ -38,32 +38,27 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-
       endIpAddress: '0.0.0.0'
     }
   }
-  resource firewallRulePublicIP 'firewallRules' = {
-    name: 'allow-public-IPs'
-    properties: {
-      startIpAddress: '88.196.181.157'
-      endIpAddress: '88.196.181.157'
-    }
-  }
-    resource firewallRulePostgresqlIP 'firewallRules' = {
-      name: 'allow-public-postgres-IPs'
-      properties: {
-        startIpAddress: '104.46.44.181'
-        endIpAddress: '104.46.44.181'
-      }
-    }
+ resource firewallRulePublicIP 'firewallRules' = {
+   name: 'allow-public-IPs'
+   properties: {
+     startIpAddress: '0.0.0.0'
+     endIpAddress: '255.255.255.255'
+   }
+ }
+ 
 }
 
-resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+  name: keyVaultName
+}
+
+resource postgresDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'Postgres--ConnectionString'
   properties: {
     value: 'Server=${postgresqlServer.name}.postgres.database.azure.com;Database=ranges;Port=5432;User Id=${administratorLogin};Password=${administratorPassword};Ssl Mode=Require;' // IMPORTANT: Use an applicaiton user for production
   }
-}
-
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name: keyVaultName
 }
 
 output serverId string = postgresqlServer.id
