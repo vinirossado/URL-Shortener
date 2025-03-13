@@ -65,7 +65,7 @@ module postgres 'modules/storage/postgresql.bicep' = {
     name: 'postgresql-${uniqueString(resourceGroup().id)}'
     location: location
     administratorLogin: 'adminuser'
-    administratorLoginPassword: pgSqlPassword
+    administratorPassword: pgSqlPassword
     keyVaultName: keyVaultName
   }
 
