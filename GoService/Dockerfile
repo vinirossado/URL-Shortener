@@ -8,8 +8,11 @@ FROM alpine:latest
 WORKDIR /app
 COPY --from=build /app/main .
 
-EXPOSE 8080
-ENV PORT=8080
+# Expose port 80 for App Service (important!)
+EXPOSE 80
+
+# Set environment variable for the port
+ENV PORT=80
 
 # Run the web service on container startup
 CMD ["/app/main"]
