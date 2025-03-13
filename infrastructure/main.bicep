@@ -3,13 +3,20 @@ param location string = resourceGroup().location
 param pgSqlPassword string
 var uniqueId = uniqueString(resourceGroup().id)
 var keyVaultName = 'kv-${uniqueId}'
-// var vnetName = 'vnet-${uniqueId}'
-// var apiSubnetName = 'subnet-api-${uniqueId}'
+var appServicePlanName = 'plan-api-${uniqueId}' // Definir um único App Service Plan
 
 module keyVault 'modules/secrets/keyvault.bicep' = {
-  name: 'keyVaultDeployment' // The name of the module not resource
+  name: 'keyVaultDeployment'
   params: {
     vaultName: keyVaultName
+    location: location
+  }
+}
+
+module appServicePlan 'modules/compute/appservice-plan.bicep' = {
+  name: 'appServicePlanDeployment'
+  params: {
+    appServicePlanName: appServicePlanName
     location: location
   }
 }
@@ -18,7 +25,7 @@ module apiService 'modules/compute/appservice.bicep' = {
   name: 'apiDeployment'
   params: {
     appName: 'api-${uniqueId}'
-    appServicePlanName: 'plan-api-${uniqueId}'
+    appServicePlanName: appServicePlanName // Usando o mesmo App Service Plan
     location: location
     keyVaultName: keyVault.outputs.name
     appSettings: [
@@ -32,62 +39,20 @@ module apiService 'modules/compute/appservice.bicep' = {
       }
     ]
   }
-}
-
-module tokenRangeService 'modules/compute/appservice.bicep' = {
-  name: 'tokenRangeServiceDeployment' 
-  params: {
-    appName: 'token-range-service-${uniqueId}'
-    appServicePlanName: 'plan-token-range-${uniqueId}'
-    location: location
-    keyVaultName: keyVault.outputs.name
-    // appSettings: [
-    //   {
-    //     name: 'DatabaseName'
-    //     value: 'urls'
-    //   }
-    //   {
-    //     name: 'ContainerName'
-    //     value: 'byUser'
-    //   }
-    // ]
-  }
-
-}
-module postgres 'modules/storage/postgresql.bicep' = {
-  name: 'postgresDeployment'
-  params: {
-    name: 'postgresql-${uniqueString(resourceGroup().id)}'
-    location: location
-    administratorLogin: 'adminuser'
-    administratorPassword: pgSqlPassword
-    keyVaultName: keyVault.outputs.name
-  }
-}
-
-module cosmosDb 'modules/storage/cosmos-db.bicep' = {
-  name: 'cosmosDbDeployment'
-  params: {
-    name: 'cosmos-db-${uniqueId}'
-    location: location
-    kind: 'GlobalDocumentDB'
-    databaseName: 'urls'
-    locationName: 'Spain Central'
-    keyVaultName: keyVaultName
-  }
   dependsOn: [
-    keyVault
+    appServicePlan
   ]
 }
 
-module keyVaultRoleAssignment 'modules/secrets/key-vault-role.bicep' = {
-  name: 'keyVaultRoleAssignmentDeployment'
+module tokenRangeService 'modules/compute/appservice.bicep' = {
+  name: 'tokenRangeServiceDeployment'
   params: {
+    appName: 'token-range-service-${uniqueId}'
+    appServicePlanName: appServicePlanName // Usando o mesmo App Service Plan
+    location: location
     keyVaultName: keyVault.outputs.name
-    principalIds: [
-      apiService.outputs.principalId
-      tokenRangeService.outputs.principalId
-    ]
   }
-
+  dependsOn: [
+    appServicePlan
+  ]
 }
