@@ -1,6 +1,7 @@
 param location string = resourceGroup().location
 var uniqueId = uniqueString(resourceGroup().id)
-
+@secure()
+param pgSqlPassword string
 var keyVaultName = 'kv-${uniqueId}'
 var appServicePlanName = 'plan-api-${uniqueId}' // Definir um único App Service Plan
 
@@ -55,5 +56,21 @@ module tokenRangeService 'modules/compute/appservice.bicep' = {
   }
   dependsOn: [
     appServicePlan
+  ]
+}
+
+module postgres 'modules/storage/postgresql.bicep' = {
+  name: 'postgresDeployment'
+  params: {
+    name: 'postgresql-${uniqueString(resourceGroup().id)}'
+    location: location
+    administratorLogin: 'adminuser'
+    administratorLoginPassword: pgSqlPassword
+    keyVaultName: keyVaultName
+    vnetId: resourceId('Microsoft.Network/virtualNetworks', vnetName)
+    subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, postgresSubnetName)
+  }
+  dependsOn: [
+    vnet
   ]
 }
