@@ -22,34 +22,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Build and export Docker image
-        uses: docker/build-push-action@v5
         with:
-          context: ./GoService
-          tags: go-app:latest
-          outputs: type=docker,dest=/tmp/go-app.tar
+          fetch-depth: 0
       
-      - name: Upload Docker image as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: go-app
-          path: /tmp/go-app.tar
-      
-      - name: Download Docker image
-        uses: actions/download-artifact@v4
-        with:
-          name: go-app
-          path: /tmp
-      
-      - name: Load Docker image
-        run: |
-          docker load --input /tmp/go-app.tar
-          docker image ls -a
-      
+      # Azure login for ACR access
       - name: Azure login
         uses: azure/login@v2
         with:
@@ -57,9 +33,63 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       
+      # Create Azure Container Registry if it doesn't exist
+      - name: Create ACR
+        run: |
+          RESOURCE_GROUP=${{ vars.RESOURCE_GROUP_NAME }}
+          ACR_NAME=$(echo "acr${{ vars.RESOURCE_GROUP_NAME }}" | tr -d '-' | tr '[:upper:]' '[:lower:]' | cut -c 1-50)
+          
+          # Check if ACR exists, create if not
+          if ! az acr show --name $ACR_NAME --resource-group $RESOURCE_GROUP &>/dev/null; then
+            echo "Creating Azure Container Registry: $ACR_NAME"
+            az acr create --resource-group $RESOURCE_GROUP --name $ACR_NAME --sku Basic --admin-enabled true
+          else
+            echo "Azure Container Registry $ACR_NAME already exists"
+          fi
+          
+          # Store ACR server name as an output
+          ACR_SERVER=$(az acr show --name $ACR_NAME --resource-group $RESOURCE_GROUP --query loginServer -o tsv)
+          echo "ACR_SERVER=$ACR_SERVER" >> $GITHUB_ENV
+          
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name $ACR_NAME --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name $ACR_NAME --query passwords[0].value -o tsv)
+          
+          echo "ACR_USERNAME=$ACR_USERNAME" >> $GITHUB_ENV
+          echo "ACR_PASSWORD=$ACR_PASSWORD" >> $GITHUB_ENV
+      
+      # Log in to ACR
+      - name: Log in to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_SERVER }}
+          username: ${{ env.ACR_USERNAME }}
+          password: ${{ env.ACR_PASSWORD }}
+      
+      # Build and push Docker image to ACR
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./GoService
+          push: true
+          tags: ${{ env.ACR_SERVER }}/go-service:${{ github.sha }}, ${{ env.ACR_SERVER }}/go-service:latest
+      
+      # Update App Service with ACR image
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ vars.GO_RESOURCE_NAME }}
           slot-name: 'Production'
-          images: go-app:latest
+          images: ${{ env.ACR_SERVER }}/go-service:latest
+      
+      # Configure App Service to pull from ACR
+      - name: Update App Service settings
+        run: |
+          # Update App Service configuration to use the ACR
+          az webapp config container set \
+            --name ${{ vars.GO_RESOURCE_NAME }} \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --docker-custom-image-name ${{ env.ACR_SERVER }}/go-service:latest \
+            --docker-registry-server-url https://${{ env.ACR_SERVER }} \
+            --docker-registry-server-user ${{ env.ACR_USERNAME }} \
+            --docker-registry-server-password ${{ env.ACR_PASSWORD }}
