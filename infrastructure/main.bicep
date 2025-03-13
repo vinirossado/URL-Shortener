@@ -1,5 +1,7 @@
 param location string = resourceGroup().location
 var uniqueId = uniqueString(resourceGroup().id)
+@secure()
+param pgSqlPassword string
 var keyVaultName = 'kv-${uniqueId}'
 var appServicePlanName = 'plan-api-${uniqueId}' // Definir um único App Service Plan
 
