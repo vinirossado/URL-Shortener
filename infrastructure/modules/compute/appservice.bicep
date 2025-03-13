@@ -29,7 +29,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           {
             name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
             value: 'false'
-          },
+          }
           {
             name: 'DOCKER_REGISTRY_SERVER_URL'
             value: dockerRegistryUrl
@@ -51,4 +51,5 @@ resource webAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
 }
 
 output appServiceId string = webApp.id
+
 output principalId string = webApp.identity.principalId
