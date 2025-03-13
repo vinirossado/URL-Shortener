@@ -67,10 +67,6 @@ module postgres 'modules/storage/postgresql.bicep' = {
     administratorLogin: 'adminuser'
     administratorLoginPassword: pgSqlPassword
     keyVaultName: keyVaultName
-    vnetId: resourceId('Microsoft.Network/virtualNetworks', vnetName)
-    subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, postgresSubnetName)
   }
-  dependsOn: [
-    vnet
-  ]
+
 }
