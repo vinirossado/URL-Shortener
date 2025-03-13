@@ -3,7 +3,7 @@ var uniqueId = uniqueString(resourceGroup().id)
 @secure()
 param pgSqlPassword string
 var keyVaultName = 'kv-${uniqueId}'
-var appServicePlanName = 'plan-api-${uniqueId}' // Definir um único App Service Plan
+var appServicePlanName = 'plan-api-${uniqueId}' // Define a single App Service Plan
 
 module keyVault 'modules/secrets/keyvault.bicep' = {
   name: 'keyVaultDeployment'
@@ -13,23 +13,24 @@ module keyVault 'modules/secrets/keyvault.bicep' = {
   }
 }
 
-module appServicePlan 'modules/compute/appservice.bicep' = {
+// Create a single App Service Plan
+module appServicePlan 'modules/compute/appserviceplan.bicep' = {
   name: 'appServicePlanDeployment'
   params: {
     appServicePlanName: appServicePlanName
-    appName: appServicePlanName
     location: location
-    keyVaultName: keyVault.outputs.vaultName
   }
 }
 
+// Deploy API to the shared App Service Plan
 module apiService 'modules/compute/appservice.bicep' = {
   name: 'apiDeployment'
   params: {
     appName: 'api-${uniqueId}'
-    appServicePlanName: appServicePlanName 
+    serverFarmId: appServicePlan.outputs.id
     location: location
     keyVaultName: keyVault.outputs.vaultName
+    linuxFxVersion: 'DOTNETCORE|9.0' // .NET 9
     appSettings: [
       {
         name: 'DatabaseName'
@@ -41,22 +42,40 @@ module apiService 'modules/compute/appservice.bicep' = {
       }
     ]
   }
-  dependsOn: [
-    appServicePlan
-  ]
 }
 
+// Deploy Token Range Service to the shared App Service Plan
 module tokenRangeService 'modules/compute/appservice.bicep' = {
   name: 'tokenRangeServiceDeployment'
   params: {
     appName: 'token-range-service-${uniqueId}'
-    appServicePlanName: appServicePlanName
+    serverFarmId: appServicePlan.outputs.id
     location: location
     keyVaultName: keyVault.outputs.vaultName
   }
-  dependsOn: [
-    appServicePlan
-  ]
+}
+
+// Deploy Go hello world service
+module goService 'modules/compute/appservice.bicep' = {
+  name: 'goServiceDeployment'
+  params: {
+    appName: 'go-hello-${uniqueId}'
+    serverFarmId: appServicePlan.outputs.id
+    location: location
+    keyVaultName: keyVault.outputs.vaultName
+    linuxFxVersion: 'DOCKER|golang:1.21-alpine'
+    appSettings: [
+      {
+        name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
+        value: 'false'
+      }
+      {
+        name: 'DOCKER_REGISTRY_SERVER_URL'
+        value: 'https://index.docker.io/v1'
+      }
+    ]
+  }
+
 }
 
 module postgres 'modules/storage/postgresql.bicep' = {
