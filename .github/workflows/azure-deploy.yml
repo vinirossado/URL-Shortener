@@ -37,6 +37,65 @@ jobs:
             #!/bin/bash
             az group create --name ${{ vars.RESOURCE_GROUP_NAME }} --location ${{ vars.RESOURCE_GROUP_LOCATION }}
             echo "Azure resource group created"
+        
+      - name: Check for and purge soft-deleted KeyVault
+        uses: Azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            set -e # Exit immediately if a command exits with a non-zero status
+
+            # Get the resource group ID - this is needed for uniqueString calculation
+            RESOURCE_GROUP_ID=$(az group show --name ${{ vars.RESOURCE_GROUP_NAME }} --query id -o tsv)
+            echo "Resource Group ID: ${RESOURCE_GROUP_ID}"
+            
+            # Calculate uniqueId using the same algorithm as uniqueString() in Bicep
+            # This is a simplified version that should produce the same result
+            uniqueId=$(echo -n "${RESOURCE_GROUP_ID}" | md5sum | cut -c1-13 | tr '[:upper:]' '[:lower:]')
+            echo "Calculated uniqueId: ${uniqueId}"
+            
+            # Construct the vault name exactly as in Bicep
+            vaultName="kv-${uniqueId}"
+            echo "KeyVault name will be: ${vaultName}"
+            
+            # List all KeyVaults in the subscription to debug
+            echo "Existing KeyVaults in the subscription:"
+            az keyvault list --query "[].name" -o tsv
+            
+            # Check if the vault already exists (not deleted)
+            existingVault=$(az keyvault list --query "[?name=='${vaultName}']" -o tsv)
+            if [ -n "$existingVault" ]; then
+              echo "KeyVault ${vaultName} already exists. Attempting to delete it first..."
+              az keyvault delete --name ${vaultName} --resource-group ${{ vars.RESOURCE_GROUP_NAME }}
+              sleep 30 # Wait for deletion to complete
+            fi
+            
+            # Check for soft-deleted vaults
+            echo "Checking for soft-deleted KeyVaults:"
+            az keyvault list-deleted --query "[].name" -o tsv
+            
+            # Check if the vault exists in a soft-deleted state
+            softDeletedVault=$(az keyvault list-deleted --query "[?name=='${vaultName}']" -o tsv)
+            
+            if [ -n "$softDeletedVault" ]; then
+              echo "Found soft-deleted KeyVault with name ${vaultName}. Purging..."
+              az keyvault purge --name ${vaultName} --location ${{ vars.RESOURCE_GROUP_LOCATION }}
+              
+              # Wait for the purge operation to complete
+              echo "Waiting for purge operation to complete..."
+              sleep 120 # Waiting 2 minutes to ensure purge is complete
+              
+              # Verify the vault is no longer in soft-deleted state
+              stillExists=$(az keyvault list-deleted --query "[?name=='${vaultName}']" -o tsv)
+              if [ -n "$stillExists" ]; then
+                echo "ERROR: Failed to purge KeyVault ${vaultName}"
+                exit 1
+              else
+                echo "Successfully purged KeyVault ${vaultName}"
+              fi
+            else
+              echo "No soft-deleted KeyVault found with name ${vaultName}."
+            fi
 
       - name: Deploy
         uses: azure/arm-deploy@v2

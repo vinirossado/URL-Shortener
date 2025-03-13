@@ -1,20 +1,9 @@
 param location string = resourceGroup().location
-param appServicePlanName string
 param appName string
 param keyVaultName string
 param appSettings array = []
-
-resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  name: appServicePlanName
-  location: location
-  sku: {
-    name: 'B1'
-  }
-  kind: 'linux'
-  properties: {
-    reserved: true
-  }
-}
+param serverFarmId string
+param linuxFxVersion string = 'DOTNETCORE|9.0' // Default to .NET 9, but can be overridden
 
 resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   name: appName
@@ -23,10 +12,10 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
     type: 'SystemAssigned'
   }
   properties: {
-    serverFarmId: appServicePlan.id
+    serverFarmId: serverFarmId
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|9.0'
+      linuxFxVersion: linuxFxVersion
       appSettings: concat(
         [
           { 

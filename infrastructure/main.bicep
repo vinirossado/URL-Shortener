@@ -1,26 +1,36 @@
 param location string = resourceGroup().location
+var uniqueId = uniqueString(resourceGroup().id)
 @secure()
 param pgSqlPassword string
-var uniqueId = uniqueString(resourceGroup().id)
 var keyVaultName = 'kv-${uniqueId}'
-// var vnetName = 'vnet-${uniqueId}'
-// var apiSubnetName = 'subnet-api-${uniqueId}'
+var appServicePlanName = 'plan-api-${uniqueId}' // Define a single App Service Plan
 
 module keyVault 'modules/secrets/keyvault.bicep' = {
-  name: 'keyVaultDeployment' // The name of the module not resource
+  name: 'keyVaultDeployment'
   params: {
     vaultName: keyVaultName
     location: location
   }
 }
 
+// Create a single App Service Plan
+module appServicePlan 'modules/compute/appserviceplan.bicep' = {
+  name: 'appServicePlanDeployment'
+  params: {
+    appServicePlanName: appServicePlanName
+    location: location
+  }
+}
+
+// Deploy API to the shared App Service Plan
 module apiService 'modules/compute/appservice.bicep' = {
   name: 'apiDeployment'
   params: {
     appName: 'api-${uniqueId}'
-    appServicePlanName: 'plan-api-${uniqueId}'
+    serverFarmId: appServicePlan.outputs.id
     location: location
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: keyVault.outputs.vaultName
+    linuxFxVersion: 'DOTNETCORE|9.0' // .NET 9
     appSettings: [
       {
         name: 'DatabaseName'
@@ -34,26 +44,40 @@ module apiService 'modules/compute/appservice.bicep' = {
   }
 }
 
+// Deploy Token Range Service to the shared App Service Plan
 module tokenRangeService 'modules/compute/appservice.bicep' = {
-  name: 'tokenRangeServiceDeployment' 
+  name: 'tokenRangeServiceDeployment'
   params: {
     appName: 'token-range-service-${uniqueId}'
-    appServicePlanName: 'plan-token-range-${uniqueId}'
+    serverFarmId: appServicePlan.outputs.id
     location: location
-    keyVaultName: keyVault.outputs.name
-    // appSettings: [
-    //   {
-    //     name: 'DatabaseName'
-    //     value: 'urls'
-    //   }
-    //   {
-    //     name: 'ContainerName'
-    //     value: 'byUser'
-    //   }
-    // ]
+    keyVaultName: keyVault.outputs.vaultName
+  }
+}
+
+// Deploy Go hello world service
+module goService 'modules/compute/appservice.bicep' = {
+  name: 'goServiceDeployment'
+  params: {
+    appName: 'go-hello-${uniqueId}'
+    serverFarmId: appServicePlan.outputs.id
+    location: location
+    keyVaultName: keyVault.outputs.vaultName
+    linuxFxVersion: 'DOCKER|golang:1.21-alpine'
+    appSettings: [
+      {
+        name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
+        value: 'false'
+      }
+      {
+        name: 'DOCKER_REGISTRY_SERVER_URL'
+        value: 'https://index.docker.io/v1'
+      }
+    ]
   }
 
 }
+
 module postgres 'modules/storage/postgresql.bicep' = {
   name: 'postgresDeployment'
   params: {
@@ -61,33 +85,9 @@ module postgres 'modules/storage/postgresql.bicep' = {
     location: location
     administratorLogin: 'adminuser'
     administratorPassword: pgSqlPassword
-    keyVaultName: keyVault.outputs.name
-  }
-}
-
-module cosmosDb 'modules/storage/cosmos-db.bicep' = {
-  name: 'cosmosDbDeployment'
-  params: {
-    name: 'cosmos-db-${uniqueId}'
-    location: location
-    kind: 'GlobalDocumentDB'
-    databaseName: 'urls'
-    locationName: 'Spain Central'
     keyVaultName: keyVaultName
   }
   dependsOn: [
     keyVault
   ]
-}
-
-module keyVaultRoleAssignment 'modules/secrets/key-vault-role.bicep' = {
-  name: 'keyVaultRoleAssignmentDeployment'
-  params: {
-    keyVaultName: keyVault.outputs.name
-    principalIds: [
-      apiService.outputs.principalId
-      tokenRangeService.outputs.principalId
-    ]
-  }
-
 }
