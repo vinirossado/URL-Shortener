@@ -37,6 +37,28 @@ jobs:
             #!/bin/bash
             az group create --name ${{ vars.RESOURCE_GROUP_NAME }} --location ${{ vars.RESOURCE_GROUP_LOCATION }}
             echo "Azure resource group created"
+        
+      - name: Check for and purge soft-deleted KeyVault
+        uses: Azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            uniqueId=$(az group show --name ${{ vars.RESOURCE_GROUP_NAME }} --query id -o tsv | shasum -a 256 | cut -c1-10)
+            vaultName="kv-${uniqueId}"
+            echo "Checking for soft-deleted KeyVault with name: ${vaultName}"
+            
+            # Check if the vault exists in a soft-deleted state
+            softDeletedVault=$(az keyvault list-deleted --query "[?name=='${vaultName}']" -o tsv)
+            
+            if [ -n "$softDeletedVault" ]; then
+              echo "Found soft-deleted KeyVault. Purging..."
+              az keyvault purge --name ${vaultName} --location ${{ vars.RESOURCE_GROUP_LOCATION }}
+              # Wait a bit for the purge to complete
+              echo "Waiting for purge operation to complete..."
+              sleep 60
+            else
+              echo "No soft-deleted KeyVault found with that name."
+            fi
 
       - name: Deploy
         uses: azure/arm-deploy@v2
