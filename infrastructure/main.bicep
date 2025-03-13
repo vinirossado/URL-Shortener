@@ -16,7 +16,7 @@ module keyVault 'modules/secrets/keyvault.bicep' = {
 module appServicePlan 'modules/compute/appservice.bicep' = {
   name: 'appServicePlanDeployment'
   params: {
-    appServicePlanName: appServicePlanName  
+    appServicePlanName: appServicePlanName
     appName: appServicePlanName
     location: location
     keyVaultName: keyVault.outputs.vaultName
@@ -27,7 +27,7 @@ module apiService 'modules/compute/appservice.bicep' = {
   name: 'apiDeployment'
   params: {
     appName: 'api-${uniqueId}'
-    appServicePlanName: appServicePlanName // Usando o mesmo App Service Plan
+    appServicePlanName: appServicePlanName 
     location: location
     keyVaultName: keyVault.outputs.vaultName
     appSettings: [
@@ -50,7 +50,7 @@ module tokenRangeService 'modules/compute/appservice.bicep' = {
   name: 'tokenRangeServiceDeployment'
   params: {
     appName: 'token-range-service-${uniqueId}'
-    appServicePlanName: appServicePlanName // Usando o mesmo App Service Plan
+    appServicePlanName: appServicePlanName
     location: location
     keyVaultName: keyVault.outputs.vaultName
   }
@@ -68,5 +68,7 @@ module postgres 'modules/storage/postgresql.bicep' = {
     administratorPassword: pgSqlPassword
     keyVaultName: keyVaultName
   }
-
+  dependsOn: [
+    keyVault
+  ]
 }
