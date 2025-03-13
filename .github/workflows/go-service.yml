@@ -47,7 +47,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.GO_APP_NAME }}
+          app-name: ${{ vars.GO_RESOURCE_NAME }}
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_GO_PUBLISH_PROFILE }}
           images: go-hello-service:latest
