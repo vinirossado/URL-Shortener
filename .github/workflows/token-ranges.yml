@@ -78,7 +78,6 @@ jobs:
           # Execute the SQL script using az postgres flexible-server execute
           az postgres flexible-server execute \
             --name $SERVER_NAME \
-            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
             --admin-user ${{ secrets.POSTGRES_USER }} \
             --admin-password "${{ secrets.PG_SQL_PASSWORD }}" \
             --database-name ranges \
