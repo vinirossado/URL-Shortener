@@ -1,6 +1,4 @@
 param location string = resourceGroup().location
-@secure()
-param pgSqlPassword string
 var uniqueId = uniqueString(resourceGroup().id)
 var keyVaultName = 'kv-${uniqueId}'
 var appServicePlanName = 'plan-api-${uniqueId}' // Definir um único App Service Plan
@@ -13,11 +11,13 @@ module keyVault 'modules/secrets/keyvault.bicep' = {
   }
 }
 
-module appServicePlan 'modules/compute/appservice-plan.bicep' = {
+module appServicePlan 'modules/compute/appservice.bicep' = {
   name: 'appServicePlanDeployment'
   params: {
-    appServicePlanName: appServicePlanName
+    appServicePlanName: appServicePlanName  
+    appName: appServicePlanName
     location: location
+    keyVaultName: keyVault.outputs.vaultName
   }
 }
 
@@ -27,7 +27,7 @@ module apiService 'modules/compute/appservice.bicep' = {
     appName: 'api-${uniqueId}'
     appServicePlanName: appServicePlanName // Usando o mesmo App Service Plan
     location: location
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: keyVault.outputs.vaultName
     appSettings: [
       {
         name: 'DatabaseName'
@@ -50,7 +50,7 @@ module tokenRangeService 'modules/compute/appservice.bicep' = {
     appName: 'token-range-service-${uniqueId}'
     appServicePlanName: appServicePlanName // Usando o mesmo App Service Plan
     location: location
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: keyVault.outputs.vaultName
   }
   dependsOn: [
     appServicePlan
