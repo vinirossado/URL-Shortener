@@ -24,7 +24,7 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-
     administratorLogin: administratorLogin
     administratorLoginPassword: administratorPassword
     network: {
-      publicNetworkAccess: 'Disabled'
+      publicNetworkAccess: 'Enabled'  // Changed from 'Disabled' to 'Enabled'
     }
   }
   resource database 'databases' = {
