@@ -1,0 +1,53 @@
+name: Go Service
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "GoService/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "GoService/**"
+  workflow_dispatch: # manual trigger
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: Development
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Build Go App
+        run: |
+          cd GoService
+          go build -o main .
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Build and push Docker image to ACR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./GoService
+          push: true
+          tags: go-hello-service:latest
+          
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.GO_APP_NAME }}
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_GO_PUBLISH_PROFILE }}
+          images: go-hello-service:latest

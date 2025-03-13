@@ -13,7 +13,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -57,19 +56,31 @@ jobs:
         with:
           name: pg-script
 
-      - name: Install PostgresSQL client
+      # Azure login for database access
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Deploy database schema using Azure CLI
+      - name: Deploy Database Schema via Azure CLI
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          # Extract server name from the connection string
+          SERVER_NAME=$(echo "${{ secrets.POSTGRES_HOST }}" | sed 's/.postgres.database.azure.com//')
+          echo "Deploying schema to PostgreSQL server $SERVER_NAME"
+          
+          # Execute the SQL script using az postgres flexible-server execute
+          az postgres flexible-server execute \
+            --name $SERVER_NAME \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --admin-user ${{ secrets.POSTGRES_USER }} \
+            --admin-password "${{ secrets.PG_SQL_PASSWORD }}" \
+            --database-name ranges \
+            --file-path "Table.sql"
 
-      - name: Deploy Database Schema
-        env:
-          PGHOST: ${{ secrets.POSTGRES_HOST }}
-          PGDATABASE: ranges
-          PGUSER: ${{ secrets.POSTGRES_USER }}
-          PGPASSWORD: ${{ secrets.PG_SQL_PASSWORD }}
-        run: psql -f Table.sql
-
+      # Deploy web app
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
@@ -78,76 +89,4 @@ jobs:
           publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
 
-
-#  deploy-stg:
-#    runs-on: ubuntu-latest
-#    needs: deploy-dev
-#    environment: Staging
-#    steps:
-#      - name: Download artifact from build job
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: .net-app
-#
-#      - name: Download db artifact from build job
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: pg-script
-#
-#      - name: Install PostgresSQL client
-#        run: |
-#          sudo apt-get update
-#          sudo apt-get install -y postgresql-client
-#
-#      - name: Deploy Database Schema
-#        env:
-#          PGHOST: ${{ secrets.POSTGRES_HOST }}
-#          PGDATABASE: ranges
-#          PGUSER: ${{ secrets.POSTGRES_USER }}
-#          PGPASSWORD: ${{ secrets.PG_SQL_PASSWORD }}
-#        run: psql -f Table.sql
-#
-#      - name: Deploy to Azure Web App
-#        uses: azure/webapps-deploy@v3
-#        with:
-#          app-name: ${{ vars.TOKEN_RANGES_RESOURCE_NAME }}
-#          slot-name: 'Production'
-#          publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
-#          package: .
-#
-#  deploy-prd:
-#    runs-on: ubuntu-latest
-#    needs: deploy-stg
-#    environment: Production
-#    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-#    steps:
-#      - name: Download artifact from build job
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: .net-app
-#
-#      - name: Download db artifact from build job
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: pg-script
-#
-#      - name: Install PostgresSQL client
-#        run: |
-#          sudo apt-get update
-#          sudo apt-get install -y postgresql-client
-#
-#      - name: Deploy Database Schema
-#        env:
-#          PGHOST: ${{ secrets.POSTGRES_HOST }}
-#          PGDATABASE: ranges
-#          PGUSER: ${{ secrets.POSTGRES_USER }}
-#          PGPASSWORD: ${{ secrets.PG_SQL_PASSWORD }}
-#        run: psql -f Table.sql
-#
-#      - name: Deploy to Azure Web App
-#        uses: azure/webapps-deploy@v3
-#        with:
-#          app-name: ${{ vars.TOKEN_RANGES_RESOURCE_NAME }}
-#          slot-name: 'Production'
-#          publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
-#          package: .
+  # Commented staging and production deployments
