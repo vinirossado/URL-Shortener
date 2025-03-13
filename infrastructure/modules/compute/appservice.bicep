@@ -4,6 +4,8 @@ param keyVaultName string
 param appSettings array = []
 param serverFarmId string
 param linuxFxVersion string = 'DOTNETCORE|9.0' // Default to .NET 9, but can be overridden
+param dockerRegistryUrl string = ''
+param isContainer bool = false
 
 resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   name: appName
@@ -23,8 +25,19 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
             value: keyVaultName
           }
         ],
+        isContainer ? [
+          {
+            name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
+            value: 'false'
+          },
+          {
+            name: 'DOCKER_REGISTRY_SERVER_URL'
+            value: dockerRegistryUrl
+          }
+        ] : [],
         appSettings
       )
+      alwaysOn: true
     }
   }
 }

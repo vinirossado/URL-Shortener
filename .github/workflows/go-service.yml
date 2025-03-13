@@ -23,25 +23,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build and export Docker image
+        uses: docker/build-push-action@v5
         with:
-          go-version: '1.21'
+          context: ./GoService
+          tags: go-app:latest
+          outputs: type=docker,dest=/tmp/go-app.tar
       
-      - name: Build Go App
-        run: |
-          cd GoService
-          go build -o main .
+      - name: Upload Docker image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-app
+          path: /tmp/go-app.tar
       
-      - name: Archive production artifacts
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: go-app
+          path: /tmp
+      
+      - name: Load Docker image
         run: |
-          cd GoService
-          zip -r ../app.zip .
+          docker load --input /tmp/go-app.tar
+          docker image ls -a
+      
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ vars.GO_RESOURCE_NAME }}
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZURE_GO_PUBLISH_PROFILE }}
-          package: ./app.zip
+          images: go-app:latest

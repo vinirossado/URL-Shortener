@@ -63,15 +63,14 @@ module goService 'modules/compute/appservice.bicep' = {
     serverFarmId: appServicePlan.outputs.id
     location: location
     keyVaultName: keyVault.outputs.vaultName
-    linuxFxVersion: 'DOCKER|golang:1.21-alpine'
+    // Use custom Docker container instead of directly using golang image
+    linuxFxVersion: ''  // Will be set by the deployment
+    isContainer: true
+    dockerRegistryUrl: 'https://index.docker.io/v1'
     appSettings: [
       {
-        name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
-        value: 'false'
-      }
-      {
-        name: 'DOCKER_REGISTRY_SERVER_URL'
-        value: 'https://index.docker.io/v1'
+        name: 'WEBSITES_PORT'
+        value: '80'
       }
     ]
   }
