@@ -4,41 +4,22 @@ using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+var keyVaultName = builder.Configuration["KeyVault:Vault"];
 
-// Configure Kestrel to listen on the port specified by Azure
-// This is critical for Azure App Service container deployments
-string port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(int.Parse(port));
-});
-
-// Check for local development appsettings.local.json file first (not checked into source control)
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
-}
-
-var keyVaultName = builder.Configuration["KeyVaultName"];
-if (!string.IsNullOrEmpty(keyVaultName))
+if (!string.IsNullOrWhiteSpace(keyVaultName))
 {
     builder.Configuration.AddAzureKeyVault(
         new Uri($"https://{keyVaultName}.vault.azure.net/"),
         new DefaultAzureCredential());
 }
 
-// // Check if CosmosDB connection string is available
-// var cosmosDbConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
-// Console.WriteLine($"CosmosDb:ConnectionString available: {!string.IsNullOrEmpty(cosmosDbConnectionString)}");
-
-builder.Services.AddSingleton(TimeProvider.System);
-
-// Add URL feature (token provider and short URL generator)
-builder.Services.AddUrlFeature();
-builder.Services.AddCosmosUrlDataStore(builder.Configuration);
-
 // Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services
+    .AddUrlFeature()
+    .AddCosmosUrlDataStore(builder.Configuration);
 
 var app = builder.Build();
 
@@ -49,7 +30,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.MapGet("/", () => "URL Shortener API");
 app.MapGet("/health", () => Results.Ok("Healthy"));
 
