@@ -5,6 +5,14 @@ using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to listen on the port specified by Azure
+// This is critical for Azure App Service container deployments
+string port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(int.Parse(port));
+});
+
 // Check for local development appsettings.local.json file first (not checked into source control)
 if (builder.Environment.IsDevelopment())
 {
@@ -18,7 +26,6 @@ if (!string.IsNullOrEmpty(keyVaultName))
         new Uri($"https://{keyVaultName}.vault.azure.net/"),
         new DefaultAzureCredential());
 }
-
 
 // // Check if CosmosDB connection string is available
 // var cosmosDbConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
