@@ -4,14 +4,24 @@ using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-var keyVaultName = builder.Configuration["KeyVault:Vault"];
+var keyVaultName = builder.Configuration["KeyVaultName"];
+
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables()
+    .AddCommandLine(args);
 
 if (!string.IsNullOrWhiteSpace(keyVaultName))
 {
     builder.Configuration.AddAzureKeyVault(
         new Uri($"https://{keyVaultName}.vault.azure.net/"),
         new DefaultAzureCredential());
+    
+    Console.WriteLine($"Using Really Azure Key Vault '{keyVaultName}'");
 }
+
+Console.WriteLine($"Azure Key Vault '{keyVaultName}'");
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

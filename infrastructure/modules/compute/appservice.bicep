@@ -24,6 +24,22 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
             name: 'KeyVaultName'
             value: keyVaultName
           }
+          {
+            name: 'AZURE_TENANT_ID'
+            value: subscription().tenantId
+          }
+          {
+            name: 'AZURE_SUBSCRIPTION_ID'
+            value: subscription().subscriptionId
+          }
+          {
+            name: 'WEBSITE_RUN_FROM_PACKAGE'
+            value: '1'
+          }
+          {
+            name: 'ASPNETCORE_ENVIRONMENT'
+            value: 'Production'
+          }
         ],
         isContainer ? [
           {

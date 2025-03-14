@@ -2,6 +2,11 @@ param location string = resourceGroup().location
 var uniqueId = uniqueString(resourceGroup().id)
 @secure()
 param pgSqlPassword string
+// Adicionar parâmetro para IPs permitidos (opcional, com valor padrão)
+param allowedCosmosDbIpAddresses array = [
+  '161.69.65.54'
+  '88.196.181.157'
+]
 var keyVaultName = 'kv-${uniqueId}'
 var appServicePlanName = 'plan-api-${uniqueId}' // Define a single App Service Plan
 
@@ -22,7 +27,21 @@ module appServicePlan 'modules/compute/appserviceplan.bicep' = {
   }
 }
 
-// Deploy API to the shared App Service Plan
+// First deploy Cosmos DB and wait for it to complete
+module cosmosDb 'modules/storage/cosmos-db.bicep' = {
+  name: 'cosmosDbDeployment'
+  params: {
+    name: 'cosmos-db-${uniqueId}'
+    location: location
+    kind: 'GlobalDocumentDB'
+    databaseName: 'urls'
+    locationName: 'Spain Central'
+    keyVaultName: keyVault.outputs.vaultName
+    allowedIpAddresses: allowedCosmosDbIpAddresses
+  }
+}
+
+// Then deploy the API service that depends on Cosmos DB
 module apiService 'modules/compute/appservice.bicep' = {
   name: 'apiDeployment'
   params: {
@@ -40,8 +59,35 @@ module apiService 'modules/compute/appservice.bicep' = {
         name: 'ContainerName'
         value: 'items'
       }
+      {
+        name: 'CosmosDB__DatabaseId'
+        value: 'urls'
+      }
+      {
+        name: 'CosmosDB__ContainerId'
+        value: 'items'
+      }
     ]
   }
+  dependsOn: [
+    cosmosDb
+  ]
+}
+
+// Give API service access to Key Vault secrets
+module apiKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
+  name: 'apiKeyVaultAccessDeployment'
+  params: {
+    keyVaultName: keyVault.outputs.vaultName
+    principalIds: [
+      apiService.outputs.principalId
+    ]
+    // Using Key Vault Secrets User built-in role (4633458b-17de-408a-b874-0445c86b69e6)
+    roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
+  }
+  dependsOn: [
+    cosmosDb  // Make sure Cosmos DB has created its connection string in Key Vault
+  ]
 }
 
 // Deploy Token Range Service to the shared App Service Plan
@@ -53,6 +99,22 @@ module tokenRangeService 'modules/compute/appservice.bicep' = {
     location: location
     keyVaultName: keyVault.outputs.vaultName
   }
+}
+
+// Give Token Range service access to Key Vault secrets
+module tokenRangeKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
+  name: 'tokenRangeKeyVaultAccessDeployment'
+  params: {
+    keyVaultName: keyVault.outputs.vaultName
+    principalIds: [
+      tokenRangeService.outputs.principalId
+    ]
+    // Using Key Vault Secrets User built-in role (4633458b-17de-408a-b874-0445c86b69e6)
+    roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
+  }
+  dependsOn: [
+    cosmosDb  // Make sure Cosmos DB has created its connection string in Key Vault
+  ]
 }
 
 // Deploy Go hello world service
@@ -74,9 +136,25 @@ module goService 'modules/compute/appservice.bicep' = {
       }
     ]
   }
-
 }
 
+// Give Go service access to Key Vault secrets
+module goKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
+  name: 'goKeyVaultAccessDeployment'
+  params: {
+    keyVaultName: keyVault.outputs.vaultName
+    principalIds: [
+      goService.outputs.principalId
+    ]
+    // Using Key Vault Secrets User built-in role (4633458b-17de-408a-b874-0445c86b69e6)
+    roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
+  }
+  dependsOn: [
+    cosmosDb  // Make sure Cosmos DB has created its connection string in Key Vault
+  ]
+}
+
+// Move these to the end since they were at the wrong place
 module postgres 'modules/storage/postgresql.bicep' = {
   name: 'postgresDeployment'
   params: {
@@ -84,23 +162,7 @@ module postgres 'modules/storage/postgresql.bicep' = {
     location: location
     administratorLogin: 'adminuser'
     administratorPassword: pgSqlPassword
-    keyVaultName: keyVaultName
+    keyVaultName: keyVault.outputs.vaultName
   }
-  dependsOn: [
-    keyVault
-  ]
-}
-module cosmosDb 'modules/storage/cosmos-db.bicep' = {
-  name: 'cosmosDbDeployment'
-  params: {
-    name: 'cosmos-db-${uniqueId}'
-    location: location
-    kind: 'GlobalDocumentDB'
-    databaseName: 'urls'
-    locationName: 'Spain Central'
-    keyVaultName: keyVaultName
-  }
-  dependsOn: [
-    keyVault
-  ]
+ 
 }

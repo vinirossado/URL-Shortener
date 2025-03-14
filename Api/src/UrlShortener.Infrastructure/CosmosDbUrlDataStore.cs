@@ -34,11 +34,11 @@ public class CosmosDbUrlDataStore : IUrlDataStore
 
         public string PartitionKey => ShortUrl[..1]; // Cosmos DB Partition Key
 
-        public ShortenedUrlCosmos(string longUrl, string shortUrl, string createdBy, DateTimeOffset createdOn)
+        public ShortenedUrlCosmos(string longUrl, string shortUrl, string createdBy, DateTimeOffset createdAt)
         {
             LongUrl = longUrl;
             ShortUrl = shortUrl;
-            CreatedAt = createdOn;
+            CreatedAt = createdAt;
             CreatedBy = createdBy;
         }
 

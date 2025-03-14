@@ -4,6 +4,10 @@ param kind string
 param databaseName string
 param locationName string
 param keyVaultName string
+param allowedIpAddresses array = [
+  '161.69.65.54'
+  '88.196.181.157'
+]
 
 param containers array = [
   {
@@ -21,11 +25,9 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   location: location
   kind: kind
   properties: {
-    ipRules: [
-      {
-        ipAddressOrRange: '161.69.65.54'
-      }
-    ]
+    ipRules: [for ip in allowedIpAddresses: {
+      ipAddressOrRange: ip
+    }]
     databaseAccountOfferType: 'Standard'
     locations: [
       {
@@ -35,6 +37,8 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
       }
     ]
     isVirtualNetworkFilterEnabled: false
+    publicNetworkAccess: 'Enabled'
+    networkAclBypass: 'AzureServices'
   }
 }
 
@@ -93,4 +97,22 @@ resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
   }
 }
 
+resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'CosmosDb--PrimaryKey'
+  properties: {
+    value: cosmosDbAccount.listKeys().primaryMasterKey
+  }
+}
+
+resource cosmosDbEndpoint 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'CosmosDb--Endpoint'
+  properties: {
+    value: cosmosDbAccount.properties.documentEndpoint
+  }
+}
+
 output cosmosDbId string = cosmosDbAccount.id
+output cosmosDbName string = cosmosDbAccount.name
+output cosmosDbEndpoint string = cosmosDbAccount.properties.documentEndpoint

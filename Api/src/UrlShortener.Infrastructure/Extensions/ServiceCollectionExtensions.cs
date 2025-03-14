@@ -26,22 +26,8 @@ public static class ServiceCollectionExtensions
 
                 return new CosmosDbUrlDataStore(container);
             });
-            //
-            // services.AddSingleton<IUserUrlsReader>(s =>
-            // {
-            //     var cosmosClient = s.GetRequiredService<CosmosClient>();
-            //
-            //     var container =
-            //         cosmosClient.GetContainer(
-            //             configuration["ByUserDatabaseName"]!,
-            //             configuration["ByUserContainerName"]!);
-            //
-            //     return new CosmosUserUrlsReader(container);
-            // });
 
             return services;
         }
-
-        return services;
     }
 }

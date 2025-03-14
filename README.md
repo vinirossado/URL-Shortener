@@ -30,10 +30,6 @@ az deployment group what-if --resource-group urlshortener-dev --template-file in
 az deployment group create --resource-group urlshortener-dev --template-file infrastructure/main.bicep
 ```
 
-#### What-if
-```bash
-az deployment group what-if --resource-group urlshortener-dev --template-file infrastructure/main.bicep
-```
 
 ### Create User for GH Actions
 
