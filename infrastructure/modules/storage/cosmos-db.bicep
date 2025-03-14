@@ -21,6 +21,11 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   location: location
   kind: kind
   properties: {
+    ipRules: [
+      {
+        ipAddressOrRange: '161.69.65.54'
+      }
+    ]
     databaseAccountOfferType: 'Standard'
     locations: [
       {
@@ -74,7 +79,6 @@ resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
       }
     }
   }
-  
 ]
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
