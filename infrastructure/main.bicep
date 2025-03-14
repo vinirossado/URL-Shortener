@@ -90,3 +90,17 @@ module postgres 'modules/storage/postgresql.bicep' = {
     keyVault
   ]
 }
+module cosmosDb 'modules/storage/cosmos-db.bicep' = {
+  name: 'cosmosDbDeployment'
+  params: {
+    name: 'cosmos-db-${uniqueId}'
+    location: location
+    kind: 'GlobalDocumentDB'
+    databaseName: 'urls'
+    locationName: 'Spain Central'
+    keyVaultName: keyVaultName
+  }
+  dependsOn: [
+    keyVault
+  ]
+}
