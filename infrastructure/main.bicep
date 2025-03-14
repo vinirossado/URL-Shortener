@@ -109,6 +109,7 @@ module tokenRangeKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
     keyVaultName: keyVault.outputs.vaultName
     principalIds: [
       tokenRangeService.outputs.principalId
+      apiService.outputs.principalId
     ]
     // Using Key Vault Secrets User built-in role (4633458b-17de-408a-b874-0445c86b69e6)
     roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'

@@ -24,7 +24,7 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-
     administratorLogin: administratorLogin
     administratorLoginPassword: administratorPassword
     network: {
-      publicNetworkAccess: 'Enabled'  // Changed from 'Disabled' to 'Enabled'
+      publicNetworkAccess: 'Disabled'
     }
   }
   resource database 'databases' = {
@@ -59,5 +59,6 @@ resource postgresDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-0
     value: 'Server=${postgresqlServer.name}.postgres.database.azure.com;Database=ranges;Port=5432;User Id=${administratorLogin};Password=${administratorPassword};Ssl Mode=Require;' // IMPORTANT: Use an applicaiton user for production
   }
 }
+
 
 output serverId string = postgresqlServer.id

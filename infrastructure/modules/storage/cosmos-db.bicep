@@ -37,7 +37,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
         isZoneRedundant: false
       }
     ]
-    isVirtualNetworkFilterEnabled: false
+    isVirtualNetworkFilterEnabled: true
     publicNetworkAccess: 'Enabled'
     networkAclBypass: 'AzureServices'
   }
@@ -98,22 +98,22 @@ resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
   }
 }
 
-resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'CosmosDb--PrimaryKey'
-  properties: {
-    value: cosmosDbAccount.listKeys().primaryMasterKey
-  }
-}
+// resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+//   parent: keyVault
+//   name: 'CosmosDb--PrimaryKey'
+//   properties: {
+//     value: cosmosDbAccount.listKeys().primaryMasterKey
+//   }
+// }
 
-resource cosmosDbEndpoint 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'CosmosDb--Endpoint'
-  properties: {
-    value: cosmosDbAccount.properties.documentEndpoint
-  }
-}
+// resource cosmosDbEndpoint 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+//   parent: keyVault
+//   name: 'CosmosDb--Endpoint'
+//   properties: {
+//     value: cosmosDbAccount.properties.documentEndpoint
+//   }
+// }
 
 output cosmosDbId string = cosmosDbAccount.id
-output cosmosDbName string = cosmosDbAccount.name
-output cosmosDbEndpoint string = cosmosDbAccount.properties.documentEndpoint
+// output cosmosDbName string = cosmosDbAccount.name
+// output cosmosDbEndpoint string = cosmosDbAccount.properties.documentEndpoint
