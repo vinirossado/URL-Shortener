@@ -11,72 +11,24 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
 }
 
-var keyVaultName = builder.Configuration["KeyVault:Vault"];
-
-if (!string.IsNullOrWhiteSpace(keyVaultName))
+var keyVaultName = builder.Configuration["KeyVaultName"];
+if (!string.IsNullOrEmpty(keyVaultName))
 {
-    Console.WriteLine($"Configuring Azure Key Vault: {keyVaultName}");
-    try 
-    {
-        builder.Configuration.AddAzureKeyVault(
-            new Uri($"https://{keyVaultName}.vault.azure.net/"),
-            new DefaultAzureCredential(new DefaultAzureCredentialOptions 
-            {
-                ExcludeSharedTokenCacheCredential = true,
-                ExcludeManagedIdentityCredential = false
-            }));
-            
-        Console.WriteLine("Successfully connected to Azure Key Vault");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Failed to connect to Azure Key Vault: {ex.Message}");
-    }
-}
-else
-{
-    Console.WriteLine("No Key Vault name provided - using local configuration only");
+    builder.Configuration.AddAzureKeyVault(
+        new Uri($"https://{keyVaultName}.vault.azure.net/"),
+        new DefaultAzureCredential());
 }
 
-// Check if CosmosDB connection string is available
-var cosmosDbConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
-Console.WriteLine($"CosmosDb:ConnectionString available: {!string.IsNullOrEmpty(cosmosDbConnectionString)}");
 
-if (string.IsNullOrEmpty(cosmosDbConnectionString) && builder.Environment.IsDevelopment())
-{
-    // For development, add an in-memory data store if no connection string is available
-    Console.WriteLine("Using in-memory URL data store for development");
-    builder.Services.AddSingleton<IUrlDataStore, InMemoryUrlDataStore>();
-}
-else 
-{
-    // Add Cosmos DB services
-    try 
-    {
-        builder.Services.AddCosmosUrlDataStore(builder.Configuration);
-        Console.WriteLine("CosmosDB URL data store registered");
-    }
-    catch (Exception ex)
-    {
-        if (builder.Environment.IsDevelopment())
-        {
-            // Fallback to in-memory for development
-            Console.WriteLine($"Failed to configure CosmosDB: {ex.Message}");
-            Console.WriteLine("Falling back to in-memory URL data store for development");
-            builder.Services.AddSingleton<IUrlDataStore, InMemoryUrlDataStore>();
-        }
-        else
-        {
-            // In production, rethrow as we need the real database
-            throw;
-        }
-    }
-}
+// // Check if CosmosDB connection string is available
+// var cosmosDbConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
+// Console.WriteLine($"CosmosDb:ConnectionString available: {!string.IsNullOrEmpty(cosmosDbConnectionString)}");
 
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Add URL feature (token provider and short URL generator)
 builder.Services.AddUrlFeature();
+builder.Services.AddCosmosUrlDataStore(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddOpenApi();
