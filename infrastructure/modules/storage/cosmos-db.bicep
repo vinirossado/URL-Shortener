@@ -7,6 +7,7 @@ param keyVaultName string
 param allowedIpAddresses array = [
   '161.69.65.54'
   '88.196.181.157'
+  '20.105.216.48'
 ]
 
 param containers array = [

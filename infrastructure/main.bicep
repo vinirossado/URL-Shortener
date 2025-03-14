@@ -5,7 +5,8 @@ param pgSqlPassword string
 // Adicionar parâmetro para IPs permitidos (opcional, com valor padrão)
 param allowedCosmosDbIpAddresses array = [
   '161.69.65.54'
-  '88.196.181.157'
+  '88.196.181.157' 
+  '20.105.216.48'
 ]
 var keyVaultName = 'kv-${uniqueId}'
 var appServicePlanName = 'plan-api-${uniqueId}' // Define a single App Service Plan
