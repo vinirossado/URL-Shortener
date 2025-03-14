@@ -38,7 +38,7 @@ jobs:
             az group create --name ${{ vars.RESOURCE_GROUP_NAME }} --location ${{ vars.RESOURCE_GROUP_LOCATION }}
             echo "Azure resource group created"
         
-      - name: Check for and purge soft-deleted KeyVault
+      # - name: Check for and purge soft-deleted KeyVault
         uses: Azure/CLI@v2
         with:
           inlineScript: |
