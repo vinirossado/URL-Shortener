@@ -4,7 +4,7 @@ using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-var keyVaultName = builder.Configuration["KeyVaultName"];
+var keyVaultName = builder.Configuration["KeyVault:Name"];
 
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
