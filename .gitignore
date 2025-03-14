@@ -406,9 +406,9 @@ infrastructure/appSettings.json
 
 TokenRanges/src/UrlShortener.TokenRangeService/appSettings.json
 
-
-
-
+# Local appsettings files
+**/appsettings.local.json
+**/appsettings.*.local.json
 
 # JetBrains Rider
 *.sln.iml
