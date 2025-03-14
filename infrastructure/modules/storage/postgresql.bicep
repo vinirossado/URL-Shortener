@@ -38,16 +38,15 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-
       endIpAddress: '0.0.0.0'
     }
   }
+  
  resource firewallRulePublicIP 'firewallRules' = {
    name: 'allow-public-IPs'
    properties: {
      startIpAddress: '0.0.0.0'
      endIpAddress: '255.255.255.255'
    }
+  }
  }
- 
-}
-
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: keyVaultName

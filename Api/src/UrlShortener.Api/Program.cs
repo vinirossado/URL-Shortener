@@ -9,10 +9,30 @@ var keyVaultName = builder.Configuration["KeyVault:Vault"];
 
 if (!string.IsNullOrWhiteSpace(keyVaultName))
 {
-    builder.Configuration.AddAzureKeyVault(
-        new Uri($"https://{keyVaultName}.vault.azure.net/"),
-        new DefaultAzureCredential());
+    Console.WriteLine($"Configuring Azure Key Vault: {keyVaultName}");
+    try 
+    {
+        builder.Configuration.AddAzureKeyVault(
+            new Uri($"https://{keyVaultName}.vault.azure.net/"),
+            new DefaultAzureCredential(new DefaultAzureCredentialOptions 
+            {
+                ExcludeSharedTokenCacheCredential = true,
+                ExcludeManagedIdentityCredential = false
+            }));
+        Console.WriteLine("Successfully connected to Azure Key Vault");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Failed to connect to Azure Key Vault: {ex.Message}");
+    }
 }
+else
+{
+    Console.WriteLine("No Key Vault name provided");
+}
+
+// Verify if the CosmosDb connection string is available
+Console.WriteLine($"CosmosDb:ConnectionString available: {!string.IsNullOrEmpty(builder.Configuration["CosmosDb:ConnectionString"])}");
 
 builder.Services.AddSingleton(TimeProvider.System);
 
@@ -32,7 +52,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/", () => "URL Shorneter API");
+app.MapGet("/", () => "URL Shortener API");
+app.MapGet("/health", () => Results.Ok("Healthy"));
 
 app.MapPost("/api/urls",
     async (AddUrlHandler handler,
