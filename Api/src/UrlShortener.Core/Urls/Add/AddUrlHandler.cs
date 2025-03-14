@@ -19,4 +19,10 @@ public class AddUrlHandler(
 
         return new AddUrlResponse(request.LongUrl, shortened.ShortUrl);
     }
+    
+    public async Task<IEnumerable<ShortenedUrl>> GetAllUrlAsync(CancellationToken cancellationToken)
+    {
+        return await urlDataStore.GetAllAsync(cancellationToken);
+    }
+    
 }

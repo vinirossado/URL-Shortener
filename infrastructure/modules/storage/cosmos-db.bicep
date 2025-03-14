@@ -92,27 +92,27 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
 
 resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
-  name: 'CosmosDb--ConnectionString'
+  name: 'CosmosDb__ConnectionString'
   properties: {
     value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
   }
 }
 
-// resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-//   parent: keyVault
-//   name: 'CosmosDb--PrimaryKey'
-//   properties: {
-//     value: cosmosDbAccount.listKeys().primaryMasterKey
-//   }
-// }
+resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'CosmosDb__PrimaryKey'
+  properties: {
+    value: cosmosDbAccount.listKeys().primaryMasterKey
+  }
+}
 
-// resource cosmosDbEndpoint 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-//   parent: keyVault
-//   name: 'CosmosDb--Endpoint'
-//   properties: {
-//     value: cosmosDbAccount.properties.documentEndpoint
-//   }
-// }
+resource cosmosDbEndpoint 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'CosmosDb__Endpoint'
+  properties: {
+    value: cosmosDbAccount.properties.documentEndpoint
+  }
+}
 
 output cosmosDbId string = cosmosDbAccount.id
 // output cosmosDbName string = cosmosDbAccount.name

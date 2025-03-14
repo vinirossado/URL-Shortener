@@ -11,4 +11,9 @@ public class InMemoryUrlDataStore : Dictionary<string, ShortenedUrl>, IUrlDataSt
         Add(shortnedUrl.ShortUrl, shortnedUrl);
         return Task.CompletedTask;
     }
+
+    public Task<IEnumerable<ShortenedUrl>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }

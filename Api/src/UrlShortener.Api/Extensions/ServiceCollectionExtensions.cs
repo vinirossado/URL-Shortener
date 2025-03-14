@@ -29,4 +29,14 @@ public class InMemoryUrlDataStore : Dictionary<string, ShortenedUrl>, IUrlDataSt
         Add(shortened.ShortUrl, shortened);
         return Task.CompletedTask;
     }
+
+    public Task<IEnumerable<ShortenedUrl>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteAsync(string shortUrl, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -22,6 +22,15 @@ public class CosmosDbUrlDataStore : IUrlDataStore
             cancellationToken: cancellationToken);
     }
 
+    public Task<IEnumerable<ShortenedUrl>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var query = new QueryDefinition("SELECT * FROM c");
+
+        return _container.GetItemQueryIterator<ShortenedUrlCosmos>(query)
+            .ReadNextAsync(cancellationToken)
+            .ContinueWith(task => task.Result.Resource.Select(url => (ShortenedUrl)url), cancellationToken);
+    }
+
     internal class ShortenedUrlCosmos
     {
         public string LongUrl { get; }

@@ -43,6 +43,11 @@ app.UseHttpsRedirection();
 app.MapGet("/", () => "URL Shortener API");
 app.MapGet("/health", () => Results.Ok("Healthy"));
 
+app.MapGet("/urls", async (AddUrlHandler handler, CancellationToken cancellationToken) =>
+{
+    return await handler.GetAllUrlAsync(cancellationToken);
+});
+
 app.MapPost("/api/urls",
     async (AddUrlHandler handler,
         AddUrlRequest request,
