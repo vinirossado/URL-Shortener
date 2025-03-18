@@ -3,11 +3,11 @@ var uniqueId = uniqueString(resourceGroup().id)
 @secure()
 param pgSqlPassword string
 // Adicionar parâmetro para IPs permitidos (opcional, com valor padrão)
-param allowedCosmosDbIpAddresses array = [
-  '161.69.65.54'
-  '88.196.181.157' 
-  '20.105.216.48'
-]
+// param allowedCosmosDbIpAddresses array = [
+//   '161.69.65.54'
+//   '88.196.181.157' 
+//   '20.105.216.48'
+// ]
 var keyVaultName = 'kv-${uniqueId}'
 var appServicePlanName = 'plan-api-${uniqueId}' // Define a single App Service Plan
 
@@ -28,17 +28,15 @@ module appServicePlan 'modules/compute/appserviceplan.bicep' = {
   }
 }
 
-// First deploy Cosmos DB and wait for it to complete
 module cosmosDb 'modules/storage/cosmos-db.bicep' = {
   name: 'cosmosDbDeployment'
   params: {
-    name: 'cosmos-db-${uniqueId}'
+    name: 'cosmos-database-${uniqueId}' 
     location: location
     kind: 'GlobalDocumentDB'
     databaseName: 'urls'
-    locationName: 'Spain Central'
+    locationName: 'Spain Central' 
     keyVaultName: keyVault.outputs.vaultName
-    allowedIpAddresses: allowedCosmosDbIpAddresses
   }
 }
 
@@ -61,17 +59,18 @@ module apiService 'modules/compute/appservice.bicep' = {
         value: 'items'
       }
       {
-        name: 'CosmosDB__DatabaseId'
+        name: 'CosmosDB--DatabaseId'
         value: 'urls'
       }
       {
-        name: 'CosmosDB__ContainerId'
+        name: 'CosmosDB--ContainerId'
         value: 'items'
       }
     ]
   }
   dependsOn: [
     cosmosDb
+    appServicePlan
   ]
 }
 
@@ -153,6 +152,7 @@ module goKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
   }
   dependsOn: [
     cosmosDb  // Make sure Cosmos DB has created its connection string in Key Vault
+    apiService
   ]
 }
 

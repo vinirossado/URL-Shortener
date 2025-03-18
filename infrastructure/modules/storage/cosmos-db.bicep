@@ -4,12 +4,6 @@ param kind string
 param databaseName string
 param locationName string
 param keyVaultName string
-param allowedIpAddresses array = [
-  '161.69.65.54'
-  '88.196.181.157'
-  '20.105.216.48'
-]
-
 param containers array = [
   {
     name: 'items'
@@ -21,14 +15,11 @@ param containers array = [
   }
 ]
 
-resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-08-15' = {
   name: name
   location: location
   kind: kind
   properties: {
-    ipRules: [for ip in allowedIpAddresses: {
-      ipAddressOrRange: ip
-    }]
     databaseAccountOfferType: 'Standard'
     locations: [
       {
@@ -37,13 +28,23 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
         isZoneRedundant: false
       }
     ]
+    // Either remove this line if you don't need VNet integration
+    isVirtualNetworkFilterEnabled: false
+    // Or if you need VNet integration, specify allowed IP ranges or VNets:
+    /*
     isVirtualNetworkFilterEnabled: true
-    publicNetworkAccess: 'Enabled'
-    networkAclBypass: 'AzureServices'
+    ipRules: [
+      {
+        ipAddressOrRange: '0.0.0.0/0'  // Allow all IPs - replace with your specific ranges
+      }
+    ]
+    virtualNetworkRules: []  // Add your VNet rules here if needed
+    */
+    publicNetworkAccess: 'Enabled'  // Make sure public access is enabled
   }
 }
 
-resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
+resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-08-15' = {
   parent: cosmosDbAccount
   name: databaseName
   properties: {
@@ -53,7 +54,8 @@ resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@20
   }
 }
 
-resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = [
+// Using a more widely supported API version
+resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-08-15' = [
   for container in containers: {
     parent: cosmosDbDatabase
     name: container.name
@@ -92,7 +94,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
 
 resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
-  name: 'CosmosDb__ConnectionString'
+  name: 'CosmosDb--ConnectionString'
   properties: {
     value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
   }
@@ -100,20 +102,10 @@ resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
 
 resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
-  name: 'CosmosDb__PrimaryKey'
+  name: 'CosmosDb--PrimaryKey'
   properties: {
     value: cosmosDbAccount.listKeys().primaryMasterKey
   }
 }
 
-resource cosmosDbEndpoint 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'CosmosDb__Endpoint'
-  properties: {
-    value: cosmosDbAccount.properties.documentEndpoint
-  }
-}
-
 output cosmosDbId string = cosmosDbAccount.id
-// output cosmosDbName string = cosmosDbAccount.name
-// output cosmosDbEndpoint string = cosmosDbAccount.properties.documentEndpoint

@@ -4,7 +4,7 @@ param roleDefinitionId string = '4633458b-17de-408a-b874-0445c86b69e6'
 
 param principalIds array
 
-resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: keyVaultName
 }
 
