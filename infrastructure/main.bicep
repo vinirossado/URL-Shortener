@@ -59,17 +59,18 @@ module apiService 'modules/compute/appservice.bicep' = {
         value: 'items'
       }
       {
-        name: 'CosmosDB__DatabaseId'
+        name: 'CosmosDB--DatabaseId'
         value: 'urls'
       }
       {
-        name: 'CosmosDB__ContainerId'
+        name: 'CosmosDB--ContainerId'
         value: 'items'
       }
     ]
   }
   dependsOn: [
     cosmosDb
+    appServicePlan
   ]
 }
 

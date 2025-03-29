@@ -2,6 +2,7 @@ using Api.Extensions;
 using Azure.Identity;
 using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 var keyVaultName = builder.Configuration["KeyVault:Name"];
@@ -17,11 +18,21 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
     builder.Configuration.AddAzureKeyVault(
         new Uri($"https://{keyVaultName}.vault.azure.net/"),
         new DefaultAzureCredential());
-    
-    Console.WriteLine($"Using Really Azure Key Vault '{keyVaultName}'");
+
+    Console.WriteLine($"Using Azure Key Vault '{keyVaultName}'");
 }
 
-Console.WriteLine($"Azure Key Vault '{keyVaultName}'");
+// Add logging to verify the connection string
+var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
+var cosmosDbConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
+if (string.IsNullOrWhiteSpace(cosmosDbConnectionString))
+{
+    logger.LogError("CosmosDb:ConnectionString is not set. Ensure the connection string is correctly configured.");
+}
+else
+{
+    logger.LogInformation("CosmosDb:ConnectionString retrieved successfully.");
+}
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
