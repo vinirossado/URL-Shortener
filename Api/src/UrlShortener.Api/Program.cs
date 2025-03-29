@@ -2,16 +2,9 @@ using Api.Extensions;
 using Azure.Identity;
 using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
-using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
-var keyVaultName = builder.Configuration["KeyVault:Name"];
-
-builder.Configuration
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables()
-    .AddCommandLine(args);
+var keyVaultName = builder.Configuration["KeyVaultName"];
 
 if (!string.IsNullOrWhiteSpace(keyVaultName))
 {
@@ -20,26 +13,21 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
         new DefaultAzureCredential());
 }
 
+// builder.Configuration
+//     .SetBasePath(Directory.GetCurrentDirectory())
+//     .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
+//     .AddEnvironmentVariables()
+//     .AddCommandLine(args);
+    
 var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
-if (string.IsNullOrWhiteSpace(keyVaultName))
-{
-    logger.LogError("KeyVault:ConnectionString is not set. Ensure the connection string is correctly configured.");
-}
-else
-{
-    logger.LogInformation($"Using Azure Key Vault '{keyVaultName}'");
-}
-
-// Add logging to verify the connection string
-var cosmosDbConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
-if (string.IsNullOrWhiteSpace(cosmosDbConnectionString))
-{
-    logger.LogError("CosmosDb:ConnectionString is not set. Ensure the connection string is correctly configured.");
-}
-else
-{
-    logger.LogInformation("CosmosDb:ConnectionString retrieved successfully.");
-}
+// if (string.IsNullOrWhiteSpace(keyVaultName))
+// {
+//     logger.LogError("KeyVault:ConnectionString is not set. Ensure the connection string is correctly configured.");
+// }
+// else
+// {
+//     logger.LogInformation($"Using Azure Key Vault '{keyVaultName}'");
+// }
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

@@ -4,6 +4,7 @@ param kind string
 param databaseName string
 param locationName string
 param keyVaultName string
+
 param containers array = [
   {
     name: 'items'
@@ -28,19 +29,8 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-08-15' = {
         isZoneRedundant: false
       }
     ]
-    // Either remove this line if you don't need VNet integration
     isVirtualNetworkFilterEnabled: false
-    // Or if you need VNet integration, specify allowed IP ranges or VNets:
-    /*
-    isVirtualNetworkFilterEnabled: true
-    ipRules: [
-      {
-        ipAddressOrRange: '0.0.0.0/0'  // Allow all IPs - replace with your specific ranges
-      }
-    ]
-    virtualNetworkRules: []  // Add your VNet rules here if needed
-    */
-    publicNetworkAccess: 'Enabled'  // Make sure public access is enabled
+    publicNetworkAccess: 'Enabled' 
   }
 }
 
@@ -54,7 +44,6 @@ resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@20
   }
 }
 
-// Using a more widely supported API version
 resource cosmosDbContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-08-15' = [
   for container in containers: {
     parent: cosmosDbDatabase
@@ -100,12 +89,12 @@ resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
   }
 }
 
-resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'CosmosDb--PrimaryKey'
-  properties: {
-    value: cosmosDbAccount.listKeys().primaryMasterKey
-  }
-}
+// resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+//   parent: keyVault
+//   name: 'CosmosDb--PrimaryKey'
+//   properties: {
+//     value: cosmosDbAccount.listKeys().primaryMasterKey
+//   }
+// }
 
 output cosmosDbId string = cosmosDbAccount.id
