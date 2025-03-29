@@ -18,14 +18,16 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
     builder.Configuration.AddAzureKeyVault(
         new Uri($"https://{keyVaultName}.vault.azure.net/"),
         new DefaultAzureCredential());
-
-    Console.WriteLine($"Using Azure Key Vault '{keyVaultName}'");
 }
 
 var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
 if (string.IsNullOrWhiteSpace(keyVaultName))
 {
     logger.LogError("KeyVault:ConnectionString is not set. Ensure the connection string is correctly configured.");
+}
+else
+{
+    logger.LogInformation($"Using Azure Key Vault '{keyVaultName}'");
 }
 
 // Add logging to verify the connection string
@@ -59,10 +61,7 @@ app.UseHttpsRedirection();
 app.MapGet("/", () => "URL Shortener API");
 app.MapGet("/health", () => Results.Ok("Healthy"));
 
-app.MapGet("/urls", async (AddUrlHandler handler, CancellationToken cancellationToken) =>
-{
-    return await handler.GetAllUrlAsync(cancellationToken);
-});
+app.MapGet("/urls", async (AddUrlHandler handler, CancellationToken cancellationToken) => { return await handler.GetAllUrlAsync(cancellationToken); });
 
 app.MapPost("/api/urls",
     async (AddUrlHandler handler,
