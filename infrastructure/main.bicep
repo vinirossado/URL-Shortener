@@ -6,7 +6,7 @@ param pgSqlPassword string
 var keyVaultName = 'kv-${uniqueId}'
 var appServicePlanName = 'plan-api-${uniqueId}' // Define a single App Service Plan
 
-module keyVault 'modules/secrets/keyVault.bicep' = {
+module keyVault 'modules/secrets/keyvault.bicep' = {
   name: 'keyVaultDeployment'
   params: {
     vaultName: keyVaultName
@@ -15,7 +15,7 @@ module keyVault 'modules/secrets/keyVault.bicep' = {
 }
 
 // Create a single App Service Plan
-module appServicePlan 'modules/compute/appServicePlan.bicep' = {
+module appServicePlan 'modules/compute/appserviceplan.bicep' = {
   name: 'appServicePlanDeployment'
   params: {
     appServicePlanName: appServicePlanName
@@ -39,7 +39,7 @@ module cosmosDb 'modules/storage/cosmos-db.bicep' = {
 }
 
 // Then deploy the API service that depends on Cosmos DB
-module apiService 'modules/compute/appService.bicep' = {
+module apiService 'modules/compute/appservice.bicep' = {
   name: 'apiDeployment'
   params: {
     appName: 'api-${uniqueId}'
