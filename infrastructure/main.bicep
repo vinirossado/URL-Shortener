@@ -70,7 +70,7 @@ module apiService 'modules/compute/appservice.bicep' = {
   }
   dependsOn: [
     cosmosDb
-    appServicePlan
+    // appServicePlan
   ]
 }
 
