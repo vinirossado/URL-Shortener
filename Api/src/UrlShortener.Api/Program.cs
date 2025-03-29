@@ -7,11 +7,6 @@ using Microsoft.Extensions.Logging;
 var builder = WebApplication.CreateBuilder(args);
 var keyVaultName = builder.Configuration["KeyVault:Name"];
 
-if (string.IsNullOrWhiteSpace(keyVaultName))
-{
-    logger.LogError("KeyVault:ConnectionString is not set. Ensure the connection string is correctly configured.");
-}
-
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
@@ -27,13 +22,13 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
     Console.WriteLine($"Using Azure Key Vault '{keyVaultName}'");
 }
 
+var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
 if (string.IsNullOrWhiteSpace(keyVaultName))
 {
     logger.LogError("KeyVault:ConnectionString is not set. Ensure the connection string is correctly configured.");
 }
 
 // Add logging to verify the connection string
-var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
 var cosmosDbConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
 if (string.IsNullOrWhiteSpace(cosmosDbConnectionString))
 {
