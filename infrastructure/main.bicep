@@ -71,22 +71,6 @@ module apiService 'modules/compute/appservice.bicep' = {
   ]
 }
 
-// Give API service access to Key Vault secrets
-// module apiKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
-//   name: 'apiKeyVaultAccessDeployment'
-//   params: {
-//     keyVaultName: keyVaultName
-//     principalIds: [
-//       apiService.outputs.principalId
-//     ]
-//     // Using Key Vault Secrets User built-in role (4633458b-17de-408a-b874-0445c86b69e6)
-//     roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
-//   }
-//   dependsOn: [
-//     cosmosDb  // Make sure Cosmos DB has created its connection string in Key Vault
-//   ]
-// }
-
 // Deploy Token Range Service to the shared App Service Plan
 module tokenRangeService 'modules/compute/appservice.bicep' = {
   name: 'tokenRangeServiceDeployment'

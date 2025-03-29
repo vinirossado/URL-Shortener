@@ -89,12 +89,4 @@ resource cosmosDbConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
   }
 }
 
-// resource cosmosDbPrimaryKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-//   parent: keyVault
-//   name: 'CosmosDb--PrimaryKey'
-//   properties: {
-//     value: cosmosDbAccount.listKeys().primaryMasterKey
-//   }
-// }
-
 output cosmosDbId string = cosmosDbAccount.id
