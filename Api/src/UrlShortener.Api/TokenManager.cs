@@ -30,21 +30,31 @@ public class TokenManager : IHostedService
         {
             _logger.LogInformation("Starting token manager");
 
-            var range = await _client.AssignTokenRangeAsync(_machineIdentifier, cancellationToken);
-
-            if (range is null)
+            _tokenProvider.ReachingRangeLimit += async (sender, args) =>
             {
-                throw new Exception("No tokens assigned.");
-            }
+                await AssignNewRangeAsync(cancellationToken);
+            };
 
-            _tokenProvider.AssignRange(range);
-            _logger.LogInformation("Assigned range: {Start}--{End}", range.Start, range.End);
+            await AssignNewRangeAsync(cancellationToken);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e);
-            throw;
+            _logger.LogCritical(ex, "TokenManager failed to start due to an error.");
+            _environmentManager.FatalError(); // Stop the application with a fatal error
         }
+    }
+
+    private async Task AssignNewRangeAsync(CancellationToken cancellationToken)
+    {
+        var range = await _client.AssignRangeAsync(_machineIdentifier, cancellationToken);
+        
+        if (range is null)
+        {
+            throw new Exception("No tokens assigned");
+        }
+
+        _tokenProvider.AssignRange(range);
+        _logger.LogInformation("Assigned range: {Start}-{End}", range.Start, range.End);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

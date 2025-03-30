@@ -57,6 +57,10 @@ module apiService 'modules/compute/appservice.bicep' = {
         value: 'items'
       }
       {
+          name:'tokenRangeService__Endpoint'
+          value:tokenRangeService.outputs.url
+      }
+      {
         name: 'CosmosDB--DatabaseId'
         value: 'urls'
       }

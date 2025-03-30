@@ -4,6 +4,6 @@ namespace Api;
 
 public interface ITokenRangeApiClient
 {
-    Task<TokenRange?> AssignTokenRangeAsync(string machineIdentifier, CancellationToken cancellationToken);
+    Task<TokenRange?> AssignRangeAsync(string machineIdentifier, CancellationToken cancellationToken);
 
 }

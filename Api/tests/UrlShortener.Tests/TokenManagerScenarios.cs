@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using NSubstitute.ReceivedExtensions;
 using UrlShortener.Core;
 
 namespace UrlShortener.Tests;
@@ -15,7 +16,7 @@ public class TokenManagerScenarios
         var tokenRangeApiClient = Substitute.For<ITokenRangeApiClient>();
 
         tokenRangeApiClient
-            .AssignTokenRangeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .AssignRangeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new TokenRange(1, 10));
 
         var tokenManager = new TokenManager(
@@ -26,28 +27,24 @@ public class TokenManagerScenarios
 
         await tokenManager.StartAsync(CancellationToken.None);
 
-        await tokenRangeApiClient.Received().AssignTokenRangeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await tokenRangeApiClient.Received().AssignRangeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Should_throw_exception_when_no_tokens_assigned()
     {
-        
         var tokenRangeApiClient = Substitute.For<ITokenRangeApiClient>();
-
-        tokenRangeApiClient
-            .AssignTokenRangeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((TokenRange?)null);
+        var environmentManager = Substitute.For<IEnvironmentManager>();
 
         var tokenManager = new TokenManager(
             tokenRangeApiClient,
             Substitute.For<TokenProvider>(),
-            Substitute.For<IEnvironmentManager>(),
+            environmentManager,
             Substitute.For<ILogger<TokenManager>>());
 
-        var action =()=> tokenManager.StartAsync(CancellationToken.None);
+        await tokenManager.StartAsync(CancellationToken.None);
         
-        await action.Should().ThrowAsync<Exception>().WithMessage("No tokens assigned.");
+        environmentManager.Received().FatalError();
         
     }
 }

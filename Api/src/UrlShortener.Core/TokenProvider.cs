@@ -47,13 +47,13 @@ public class TokenProvider
     }
 
     public event EventHandler? ReachingRangeLimit;
-    
-    protected virtual void OnRangeThresholdReached(EventArgs e)
+
+    private void OnRangeThresholdReached(EventArgs e)
     {
         ReachingRangeLimit?.Invoke(this, e);
     }
 
-    public class ReachingRangeLimitEventArgs : EventArgs
+    private class ReachingRangeLimitEventArgs : EventArgs
     {
         public long Token { get; set; }
         public long RangeLimit { get; set; }
