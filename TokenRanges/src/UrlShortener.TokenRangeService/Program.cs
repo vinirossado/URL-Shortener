@@ -5,25 +5,21 @@ using UrlShortener.TokenRangeService;
 var builder = WebApplication.CreateBuilder(args);
 
 var keyVaultName = builder.Configuration["KeyVaultName"];
-
 if (!string.IsNullOrWhiteSpace(keyVaultName))
 {
-    var uri = new Uri($"https://{keyVaultName}.vault.azure.net/");
-
     builder.Configuration.AddAzureKeyVault(
-        uri,
+        new Uri($"https://{keyVaultName}.vault.azure.net/"),
         new DefaultAzureCredential());
 }
-builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration["Postgres:ConnectionString"]!);
+
+
+// builder.Services.AddHealthChecks()
+//     .AddNpgSql(builder.Configuration["Postgres:ConnectionString"]!);
 
 builder.Services.AddSingleton(
     new TokenRangeManager(builder.Configuration["Postgres:ConnectionString"]!));
-   
 
 builder.Services.AddOpenApi();
-builder.Services.AddSingleton(
-    new TokenRangeManager(builder.Configuration["Postgres:ConnectionString"]!));
 
 var app = builder.Build();
 

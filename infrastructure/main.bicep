@@ -82,22 +82,40 @@ module tokenRangeService 'modules/compute/appservice.bicep' = {
   }
 }
 
-// Give Token Range service access to Key Vault secrets
-module tokenRangeKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
-  name: 'tokenRangeKeyVaultAccessDeployment'
+module keyVaultRoleAssignment 'modules/secrets/key-vault-role.bicep' = {
+  name: 'keyVaultRoleAssignmentDeployment'
   params: {
     keyVaultName: keyVaultName
     principalIds: [
-      tokenRangeService.outputs.principalId
       apiService.outputs.principalId
+      tokenRangeService.outputs.principalId
+      goService.outputs.principalId
     ]
     // Using Key Vault Secrets User built-in role (4633458b-17de-408a-b874-0445c86b69e6)
-    roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
+//     roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
   }
   dependsOn: [
-    cosmosDb // Make sure Cosmos DB has created its connection string in Key Vault
+    keyVault
+    cosmosDb 
   ]
 }
+
+// Give Token Range service access to Key Vault secrets
+// module tokenRangeKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
+//   name: 'tokenRangeKeyVaultAccessDeployment'
+//   params: {
+//     keyVaultName: keyVaultName
+//     principalIds: [
+//       tokenRangeService.outputs.principalId
+//       apiService.outputs.principalId
+//     ]
+//     // Using Key Vault Secrets User built-in role (4633458b-17de-408a-b874-0445c86b69e6)
+//     roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
+//   }
+//   dependsOn: [
+//     cosmosDb // Make sure Cosmos DB has created its connection string in Key Vault
+//   ]
+// }
 
 // Deploy Go hello world service
 module goService 'modules/compute/appservice.bicep' = {

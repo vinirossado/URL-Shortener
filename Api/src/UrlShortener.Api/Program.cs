@@ -13,6 +13,7 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
         new DefaultAzureCredential());
 }
 
+
 // builder.Configuration
 //     .SetBasePath(Directory.GetCurrentDirectory())
 //     .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
