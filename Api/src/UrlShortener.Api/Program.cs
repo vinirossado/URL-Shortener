@@ -13,22 +13,7 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
         new DefaultAzureCredential());
 }
 
-
-// builder.Configuration
-//     .SetBasePath(Directory.GetCurrentDirectory())
-//     .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
-//     .AddEnvironmentVariables()
-//     .AddCommandLine(args);
-    
 var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
-// if (string.IsNullOrWhiteSpace(keyVaultName))
-// {
-//     logger.LogError("KeyVault:ConnectionString is not set. Ensure the connection string is correctly configured.");
-// }
-// else
-// {
-//     logger.LogInformation($"Using Azure Key Vault '{keyVaultName}'");
-// }
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
