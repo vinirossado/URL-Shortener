@@ -59,29 +59,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: pg-script
-
-      # Azure login for database access
-      - name: Azure login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      # Deploy database schema using Azure CLI
-      - name: Deploy Database Schema via Azure CLI
-        run: |
-          # Extract server name from the connection string
-          SERVER_NAME=$(echo "${{ secrets.POSTGRES_HOST }}" | sed 's/.postgres.database.azure.com//')
-          echo "Deploying schema to PostgreSQL server $SERVER_NAME"
           
-          # Execute the SQL script using az postgres flexible-server execute
-          az postgres flexible-server execute \
-            --name $SERVER_NAME \
-            --admin-user ${{ secrets.POSTGRES_USER }} \
-            --admin-password "${{ secrets.PG_SQL_PASSWORD }}" \
-            --database-name ranges \
-            --file-path "Table.sql"
+      - name: Instal PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+        # Deploy database schema
+      - name: Deploy Database Schema
+        env:
+          PGHOST: ${{ secrets.POSTGRES_HOST }}
+          PGDATABASE: ranges
+          PGUSER: ${{ secrets.POSTGRES_USER }}
+          PGPASSWORD: ${{ secrets.PG_SQL_PASSWORD }}
+        run: psql -f Table.sql
 
       # Deploy web app
       - name: Deploy to Azure Web App
@@ -92,4 +83,3 @@ jobs:
           publish-profile: ${{ secrets.AZURE_TOKENRANGES_PUBLISH_PROFILE }}
           package: .
 
-  # Commented staging and production deployments
