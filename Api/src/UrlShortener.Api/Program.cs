@@ -5,7 +5,9 @@ using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-var keyVaultName = builder.Configuration["KeyVaultName"];
+// var keyVaultUri = builder.Configuration["KeyVault:Vault"];
+
+var keyVaultName = builder.Configuration["KeyVault:Vault"];
  
 if (!string.IsNullOrWhiteSpace(keyVaultName))
 {
