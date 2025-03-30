@@ -4,7 +4,7 @@ using UrlShortener.TokenRangeService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var keyVaultName = builder.Configuration["KeyVault:Vault"];
+var keyVaultName = builder.Configuration["KeyVaultName"];
 
 if (!string.IsNullOrWhiteSpace(keyVaultName))
 {
@@ -13,20 +13,13 @@ if (!string.IsNullOrWhiteSpace(keyVaultName))
     builder.Configuration.AddAzureKeyVault(
         uri,
         new DefaultAzureCredential());
-
-    // Test KeyVault connection by retrieving a secret
-    var secretClient = new SecretClient(uri, new DefaultAzureCredential());
-    try
-    {
-        // var secret = secretClient.GetSecret("TestSecret");
-        var secret = secretClient.GetSecret("Postgres--ConnectionString");
-        Console.WriteLine($"Successfully retrieved secret: {secret.Value.Value}");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Failed to retrieve secret: {ex.Message}");
-    }
 }
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration["Postgres:ConnectionString"]!);
+
+builder.Services.AddSingleton(
+    new TokenRangeManager(builder.Configuration["Postgres:ConnectionString"]!));
+   
 
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(

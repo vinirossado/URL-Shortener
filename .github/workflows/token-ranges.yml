@@ -60,19 +60,64 @@ jobs:
         with:
           name: pg-script
           
-      - name: Instal PostgreSQL client
+      - name: Install PostgreSQL client
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client
+      
+      # Add Azure login for managing PostgreSQL firewall
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      
+      # Get GitHub Actions runner IP address
+      - name: Get GitHub Actions IP
+        id: get_ip
+        run: |
+          GITHUB_IP=$(curl -s https://api.ipify.org)
+          echo "Github Actions IP: $GITHUB_IP"
+          echo "github_ip=$GITHUB_IP" >> $GITHUB_OUTPUT
+      
+      # Add temporary firewall rule to allow GitHub Actions IP
+      - name: Configure PostgreSQL firewall
+        run: |
+          # Extract server name from host (remove .postgres.database.azure.com part)
+          POSTGRES_SERVER=$(echo "${{ secrets.POSTGRES_HOST }}" | sed 's/\..*//')
+          echo "Adding firewall rule for GitHub Actions IP: ${{ steps.get_ip.outputs.github_ip }}"
+          
+          # Add firewall rule
+          az postgres flexible-server firewall-rule create \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --name $POSTGRES_SERVER \
+            --rule-name "github-actions-temp" \
+            --start-ip-address ${{ steps.get_ip.outputs.github_ip }} \
+            --end-ip-address ${{ steps.get_ip.outputs.github_ip }}
 
-        # Deploy database schema
+      # Deploy database schema
       - name: Deploy Database Schema
         env:
           PGHOST: ${{ secrets.POSTGRES_HOST }}
           PGDATABASE: ranges
           PGUSER: ${{ secrets.POSTGRES_USER }}
           PGPASSWORD: ${{ secrets.PG_SQL_PASSWORD }}
+          PGSSLMODE: require
         run: psql -f Table.sql
+      
+      # Remove temporary firewall rule
+      - name: Remove PostgreSQL firewall rule
+        if: always() # Run even if previous steps fail
+        run: |
+          POSTGRES_SERVER=$(echo "${{ secrets.POSTGRES_HOST }}" | sed 's/\..*//')
+          
+          # Remove firewall rule
+          az postgres flexible-server firewall-rule delete \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --name $POSTGRES_SERVER \
+            --rule-name "github-actions-temp" \
+            --yes
 
       # Deploy web app
       - name: Deploy to Azure Web App
