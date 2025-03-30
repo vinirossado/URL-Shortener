@@ -24,29 +24,32 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-
     administratorLogin: administratorLogin
     administratorLoginPassword: administratorPassword
     network: {
-      publicNetworkAccess: 'Disabled'
+      publicNetworkAccess: 'Enabled'
     }
   }
   resource database 'databases' = {
     name: 'ranges'
   }
 
-//   resource firewallRule 'firewallRules' = {
-//     name: 'allow-all-azure-internal-IPs'
-//     properties: {
-//       startIpAddress: '0.0.0.0'
-//       endIpAddress: '0.0.0.0'
-//     }
-//   }
-//   
-//  resource firewallRulePublicIP 'firewallRules' = {
-//    name: 'allow-public-IPs'
-//    properties: {
-//      startIpAddress: '0.0.0.0'
-//      endIpAddress: '255.255.255.255'
-//    }
-//   }
- }
+  // Uncomment only one of these as needed:
+  // Allow only Azure services
+  resource firewallRule 'firewallRules' = {
+    name: 'allow-azure-services'
+    properties: {
+      startIpAddress: '0.0.0.0'
+      endIpAddress: '0.0.0.0'
+    }
+  }
+  
+  // For development only - Remove for production
+  // resource firewallRulePublicIP 'firewallRules' = {
+  //   name: 'allow-public-IPs'
+  //   properties: {
+  //     startIpAddress: '0.0.0.0'
+  //     endIpAddress: '255.255.255.255'
+  //   }
+  // }
+}
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: keyVaultName
