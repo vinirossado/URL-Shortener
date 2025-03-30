@@ -12,42 +12,15 @@ if (!string.IsNullOrWhiteSpace(keyVaultUri))
     builder.Configuration.AddAzureKeyVault(
         new Uri($"https://{keyVaultUri}.vault.azure.net/"),
         new DefaultAzureCredential());
-
-        logger.LogInformation("Key Vault integration enabled. The Right form is KeyVault:Vault");
-} else if (builder.Configuration["KeyVaultName"] != null)
-{
-    // Fallback to the old Key Vault configuration
-    keyVaultUri = builder.Configuration["KeyVaultName"];
-    if (!string.IsNullOrWhiteSpace(keyVaultUri))
-    {
-        builder.Configuration.AddAzureKeyVault(
-            new Uri($"https://{keyVaultUri}.vault.azure.net/"),
-            new DefaultAzureCredential());
-
-            logger.LogInformation("Key Vault integration enabled. The Right form is KeyVaultName");
-    }
 }
 
-// First try to get the connection string from configuration directly
 var connectionString = builder.Configuration["Postgres:ConnectionString"];
 
-// If not found, try the standard Key Vault secret name
-if (string.IsNullOrEmpty(connectionString))
-{
-    connectionString = builder.Configuration["Postgres--ConnectionString"];
-    logger.LogInformation("Postgres--ConnectionString");
-
-}
-
-logger.LogInformation("Postgres:ConnectionString");
-
-// Log the connection string availability (but not the actual string for security)
-Console.WriteLine($"PostgreSQL Connection String available: {!string.IsNullOrEmpty(connectionString)}");
-
-if (string.IsNullOrEmpty(connectionString))
-{
-    throw new InvalidOperationException("PostgreSQL connection string not found. Please ensure it's configured in the application settings or Key Vault.");
-}
+// if (string.IsNullOrEmpty(connectionString))
+// {
+//     connectionString = builder.Configuration["Postgres--ConnectionString"];
+//     logger.LogInformation("Postgres--ConnectionString");
+// }
 
 // Add health checks with the connection string
 builder.Services.AddHealthChecks()
