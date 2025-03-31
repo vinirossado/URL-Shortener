@@ -31,35 +31,20 @@ else
 
 // Get the connection string from configuration
 var connectionString = builder.Configuration["Postgres:ConnectionString"];
-logger.LogInformation("PostgreSQL Connection String available: {Available}", !string.IsNullOrEmpty(connectionString));
+logger.LogInformation("PostgreSQL Connection String available: {Available}", connectionString);
 
 // Try alternate key format if not found
 if (string.IsNullOrEmpty(connectionString))
 {
     logger.LogInformation("Trying alternate connection string format (Postgres--ConnectionString)");
     connectionString = builder.Configuration["Postgres--ConnectionString"];
-    logger.LogInformation("Alternate PostgreSQL Connection String available: {Available}", !string.IsNullOrEmpty(connectionString));
+    logger.LogInformation("Alternate PostgreSQL Connection String available: {Available}", connectionString);
 }
 
 if (string.IsNullOrEmpty(connectionString))
 {
     logger.LogCritical("No PostgreSQL connection string found in configuration");
     throw new InvalidOperationException("PostgreSQL connection string not found. Please ensure it's configured in the application settings or Key Vault.");
-}
-
-// Dump all configuration keys (without values) to help diagnose issues
-foreach (var configEntry in builder.Configuration.AsEnumerable())
-{
-    if (!configEntry.Key.Contains("ConnectionString", StringComparison.OrdinalIgnoreCase) && 
-        !configEntry.Key.Contains("Secret", StringComparison.OrdinalIgnoreCase) &&
-        !configEntry.Key.Contains("Password", StringComparison.OrdinalIgnoreCase))
-    {
-        logger.LogInformation("Config Entry: {Key}", configEntry.Key);
-    }
-    else
-    {
-        logger.LogInformation("Sensitive Config Entry Present: {Key}", configEntry.Key);
-    }
 }
 
 // Add health checks with the connection string
