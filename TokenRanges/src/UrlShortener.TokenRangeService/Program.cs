@@ -16,8 +16,9 @@ if (!string.IsNullOrWhiteSpace(keyVaultUri))
 
 var connectionString = builder.Configuration["Postgres:ConnectionString"];
 
-logger.LogError("PGSQL Connection String");
-logger.LogError(connectionString);
+logger.LogInformation("PGSQL Connection String");
+logger.LogInformation(connectionString);
+Console.WriteLine($"Connection String: {connectionString}");
 
 // if (string.IsNullOrEmpty(connectionString))
 // {
