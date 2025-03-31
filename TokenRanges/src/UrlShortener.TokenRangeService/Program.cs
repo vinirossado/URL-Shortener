@@ -1,30 +1,66 @@
 using Azure.Identity;
+using Microsoft.Extensions.Logging.Console;
 using UrlShortener.TokenRangeService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
+// Configure proper logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole(options => 
+{
+    options.FormatterName = ConsoleFormatterNames.Json;
+});
+builder.Logging.AddAzureWebAppDiagnostics();
+
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 
 // Configure Key Vault integration
+logger.LogInformation("Configuring Key Vault integration");
 var keyVaultUri = builder.Configuration["KeyVault:Vault"];
 if (!string.IsNullOrWhiteSpace(keyVaultUri))
 {
+    logger.LogInformation("Key Vault URI found: {KeyVaultUri}", keyVaultUri);
     builder.Configuration.AddAzureKeyVault(
         new Uri($"https://{keyVaultUri}.vault.azure.net/"),
         new DefaultAzureCredential());
 }
+else
+{
+    logger.LogWarning("No Key Vault URI found in configuration");
+}
 
+// Get the connection string from configuration
 var connectionString = builder.Configuration["Postgres:ConnectionString"];
+logger.LogInformation("PostgreSQL Connection String available: {Available}", !string.IsNullOrEmpty(connectionString));
 
-logger.LogInformation("PGSQL Connection String");
-logger.LogInformation(connectionString);
-Console.WriteLine($"Connection String: {connectionString}");
+// Try alternate key format if not found
+if (string.IsNullOrEmpty(connectionString))
+{
+    logger.LogInformation("Trying alternate connection string format (Postgres--ConnectionString)");
+    connectionString = builder.Configuration["Postgres--ConnectionString"];
+    logger.LogInformation("Alternate PostgreSQL Connection String available: {Available}", !string.IsNullOrEmpty(connectionString));
+}
 
-// if (string.IsNullOrEmpty(connectionString))
-// {
-//     connectionString = builder.Configuration["Postgres--ConnectionString"];
-//     logger.LogInformation("Postgres--ConnectionString");
-// }
+if (string.IsNullOrEmpty(connectionString))
+{
+    logger.LogCritical("No PostgreSQL connection string found in configuration");
+    throw new InvalidOperationException("PostgreSQL connection string not found. Please ensure it's configured in the application settings or Key Vault.");
+}
+
+// Dump all configuration keys (without values) to help diagnose issues
+foreach (var configEntry in builder.Configuration.AsEnumerable())
+{
+    if (!configEntry.Key.Contains("ConnectionString", StringComparison.OrdinalIgnoreCase) && 
+        !configEntry.Key.Contains("Secret", StringComparison.OrdinalIgnoreCase) &&
+        !configEntry.Key.Contains("Password", StringComparison.OrdinalIgnoreCase))
+    {
+        logger.LogInformation("Config Entry: {Key}", configEntry.Key);
+    }
+    else
+    {
+        logger.LogInformation("Sensitive Config Entry Present: {Key}", configEntry.Key);
+    }
+}
 
 // Add health checks with the connection string
 builder.Services.AddHealthChecks()
@@ -45,14 +81,28 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+logger.LogInformation("Application startup complete, mapping endpoints");
+
 app.MapGet("/", () => "TokenRangeService");
 app.MapHealthChecks("/health");
 app.MapPost("/assign",
-    async (AssignTokenRangeRequest request, TokenRangeManager manager) =>
+    async (AssignTokenRangeRequest request, TokenRangeManager manager, ILogger<Program> endpointLogger) =>
     {
-        var range = await manager.AssignRangeAsync(request.Key);
-
-        return range;
+        endpointLogger.LogInformation("Received assign request for key: {Key}", request.Key);
+        try
+        {
+            var range = await manager.AssignRangeAsync(request.Key);
+            endpointLogger.LogInformation("Assigned token range {Start} to {End} for key {Key}", 
+                range.Start, range.End, request.Key);
+            return range;
+        }
+        catch (Exception ex)
+        {
+            endpointLogger.LogError(ex, "Error assigning token range for key {Key}", request.Key);
+            throw;
+        }
     });
+
+logger.LogInformation("Application configured and starting");
 
 app.Run();
