@@ -5,7 +5,7 @@ param administratorLogin string
 @secure()
 param administratorPassword string
 
-resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
+resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-11-01-preview' = {
   name: name
   location: location
   sku: {

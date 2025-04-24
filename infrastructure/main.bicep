@@ -159,6 +159,19 @@ module goKeyVaultAccess 'modules/secrets/key-vault-role.bicep' = {
   ]
 }
 
+module entraApp 'modules/identity/entra-app.bicep' = {
+  name: 'entraAppWeb'
+  params: {
+    applicationName: 'web-${uniqueId}'
+//     spaRedirectUris: [
+//       'http://localhost:3000/' // Not for PRD use
+//       staticWebApp.outputs.url
+//       'https://${frontDoor.outputs.endpointHostName}'
+//       'https://${customDomain}'
+//     ]
+  }
+}
+
 // Move these to the end since they were at the wrong place
 module postgres 'modules/storage/postgresql.bicep' = {
   name: 'postgresDeployment'
