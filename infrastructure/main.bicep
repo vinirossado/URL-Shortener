@@ -99,6 +99,26 @@ module tokenRangeService 'modules/compute/appservice.bicep' = {
     serverFarmId: appServicePlan.outputs.id
     location: location
     keyVaultName: keyVaultName
+     appSettings: [
+      {
+        name: 'DatabaseName'
+        value: 'urls'
+      }
+      {
+        name: 'ContainerName'
+        value: 'items'
+      }
+    ]
+  }
+}
+
+module redirectApiService 'modules/compute/appservice.bicep' = {
+  name: 'redirectApiServiceDeployment'
+  params: {
+    appName: 'redirect-api-service-${uniqueId}'
+    serverFarmId: appServicePlan.outputs.id // New version for appServicePlanName (Machine)
+    location: location
+    keyVaultName: keyVaultName
   }
 }
 
@@ -110,6 +130,7 @@ module keyVaultRoleAssignment 'modules/secrets/key-vault-role.bicep' = {
       apiService.outputs.principalId
       tokenRangeService.outputs.principalId
       goService.outputs.principalId
+      redirectApiService.outputs.principalId
     ]
     // Using Key Vault Secrets User built-in role (4633458b-17de-408a-b874-0445c86b69e6)
 //     roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
