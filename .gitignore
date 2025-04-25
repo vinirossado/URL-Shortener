@@ -399,7 +399,8 @@ FodyWeavers.xsd
 # Remove appSettings.json from source control in all directories
 
 # Local directory
-appSettings.json
+
+appsettings.*.json
 
 # Infrastructure directory
 infrastructure/appSettings.json
