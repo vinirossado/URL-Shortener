@@ -409,6 +409,7 @@ TokenRanges/src/UrlShortener.TokenRangeService/appSettings.json
 **/appsettings.local.json
 **/appsettings.*.local.json
 **/appsettings.*.json
+Api/src/UrlShortener.Api/appsettings.*.json
 
 # JetBrains Rider
 *.sln.iml
