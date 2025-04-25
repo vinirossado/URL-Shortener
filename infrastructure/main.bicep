@@ -68,6 +68,22 @@ module apiService 'modules/compute/appservice.bicep' = {
         name: 'CosmosDB--ContainerId'
         value: 'items'
       }
+      {
+          name: 'AzureAd__Instance'
+          value: environment().authentication.loginEndpoint
+      }
+      {
+          name: 'AzureAd__TenantId'
+          value: tenant().tenantId
+      }
+      {
+          name: 'AzureAd__ClientId'
+          value: entraApp.outputs.appId
+      }
+      {
+          name: 'AzureAd__Scopes'
+          value: 'Urls.Read'
+      }
     ]
   }
   dependsOn: [

@@ -13,7 +13,8 @@ public class AddUrlFeature : IClassFixture<ApiFixture>
     public AddUrlFeature(ApiFixture fixture)
     {
         _client = fixture.CreateClient();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme: "TestScheme");
+        _client.DefaultRequestHeaders.Authorization = 
+            new AuthenticationHeaderValue(scheme: "TestScheme");
     }
 
     [Fact]
