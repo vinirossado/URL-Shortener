@@ -29,7 +29,7 @@ public class Fixture : WebApplicationFactory<ITokenRangeAssemblyMarker>, IAsyncL
         await command.ExecuteNonQueryAsync();
     }
 
-    public async Task DisposeAsync()
+    public new async Task DisposeAsync()
     {
         await _postgresContainer.StopAsync();
     }
