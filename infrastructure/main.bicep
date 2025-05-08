@@ -209,6 +209,18 @@ module entraApp 'modules/identity/entra-app.bicep' = {
   }
 }
 
+module redisCache 'modules/storage/redis-cache.bicep' = {
+  name: 'redisCacheDeployment'
+  params: {
+    name: 'redis-cache-${uniqueId}'
+    location: location
+    keyVaultName: keyVaultName
+  }
+  dependsOn: [
+    keyVault
+  ]
+}
+
 // Move these to the end since they were at the wrong place
 module postgres 'modules/storage/postgresql.bicep' = {
   name: 'postgresDeployment'
