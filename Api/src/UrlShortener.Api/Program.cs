@@ -1,5 +1,3 @@
-using System.Security.Authentication;
-using System.Security.Claims;
 using Api;
 using Api.Extensions;
 using Azure.Identity;
@@ -10,7 +8,6 @@ using UrlShortener.Core.Urls.Add;
 using UrlShortener.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-// var keyVaultUri = builder.Configuration["KeyVault:Vault"];
 
 var keyVaultName = builder.Configuration["KeyVault:Vault"];
  
