@@ -255,6 +255,7 @@ module cosmosTriggerFunction 'modules/compute/function.bicep' = {
   }
   dependsOn: [
     keyVault
+    storageAccount
     cosmosDb    
   ]
 }

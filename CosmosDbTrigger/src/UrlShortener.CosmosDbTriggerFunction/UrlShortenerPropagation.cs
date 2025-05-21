@@ -18,7 +18,7 @@ public class UrlShortenerPropagation
     public void Run([CosmosDBTrigger(
         databaseName: "urls",
         containerName: "items",
-        Connection = "cosmosdatabase2g45mzh7gjumo_DOCUMENTDB",
+        Connection = "CosmosDbConnection",
         LeaseContainerName = "leases",
         CreateLeaseContainerIfNotExists = true)] IReadOnlyList<MyDocument> input)
     {
