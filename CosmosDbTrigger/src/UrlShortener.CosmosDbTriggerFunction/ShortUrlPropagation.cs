@@ -60,12 +60,12 @@ namespace UrlShortener.CosmosDbTriggerFunction
     {
         public string LongUrl { get; }
 
-        [JsonProperty(PropertyName = "id")] // Cosmos DB Unique Identifier
+        [JsonProperty(PropertyName = "id")]
         public string ShortUrl { get; }
 
         public DateTimeOffset CreatedOn { get; }
 
-        [JsonProperty(PropertyName = "PartitionKey")] // Cosmos DB Partition Key
+        [JsonProperty(PropertyName = "PartitionKey")]
         public string CreatedBy { get; }
 
         public ShortenedUrlEntity(string longUrl, string shortUrl, 
