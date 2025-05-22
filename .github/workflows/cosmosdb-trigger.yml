@@ -12,7 +12,7 @@ on:
   workflow_dispatch: # manual trigger
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'CosmosDbTrigger/src/CosmosDbTrigger'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'CosmosDbTrigger/src/UrlShortener.CosmosDbTriggerFunction'
   DOTNET_VERSION: '9.0.x'
 
 jobs:
